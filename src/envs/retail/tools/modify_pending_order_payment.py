@@ -69,7 +69,28 @@ class ModifyPendingOrderPayment(Tool):
         #   - If the old payment method is a gift card, add the amount back to
         #     its balance and round to 2 decimal places.
         ############################################################
-        
+
+        new_payment_record = PaymentRecord(
+            transaction_type=TransactionType.PAYMENT,
+            amount=amount,
+            payment_method_id=payment_method_id,
+        )
+        new_records.append(new_payment_record)
+        old_payment_record = PaymentRecord(
+            transaction_type=TransactionType.REFUND,
+            amount=amount,
+            payment_method_id = old_payment_method_id,
+        )
+        new_records.append(old_payment_record)
+
+        if "gift_card" in new_payment_record.payment_method_id:
+            val = data["users"][order["user_id"]]["payment_methods"][new_payment_record.payment_method_id]["balance"]
+            rounded_val = round(val - new_payment_record.amount, 2)
+            data["users"][order["user_id"]]["payment_methods"][new_payment_record.payment_method_id]["balance"] = rounded_val
+        if "gift_card" in old_payment_record.payment_method_id:
+            val = data["users"][order["user_id"]]["payment_methods"][old_payment_record.payment_method_id]["balance"]
+            rounded_val = round(val + old_payment_record.amount, 2)
+            data["users"][order["user_id"]]["payment_methods"][old_payment_record.payment_method_id]["balance"] = rounded_val
         ############################################################
         # STUDENT IMPLEMENTATION END
         ############################################################

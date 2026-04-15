@@ -70,6 +70,21 @@ class ModifyPendingOrderItems(Tool):
         # across all item pairs and accumulate into diff_price.
         ############################################################
 
+        used_line_indices: set[int] = set()
+        for item_id, new_item_id in zip(item_ids, new_item_ids):
+            for idx, row in enumerate(order["items"]):
+                if idx in used_line_indices:
+                    continue
+                if row["item_id"] == item_id:
+                    used_line_indices.add(idx)
+                    old_price = row["price"]
+                    product_id = row["product_id"]
+                    break
+            else:
+                continue
+            new_price = products[product_id]["variants"][new_item_id]["price"]
+            diff_price = round(diff_price + (new_price - old_price), 2)
+
         ############################################################
         # STUDENT IMPLEMENTATION END
         ############################################################
@@ -90,6 +105,40 @@ class ModifyPendingOrderItems(Tool):
         #    options in order["items"] to the new variant's values.
         # 3. Set order["status"] to "pending (item modified)".
         ############################################################
+
+        if diff_price != 0:
+            new_payment_record = PaymentRecord(
+                transaction_type=(
+                    TransactionType.PAYMENT
+                    if diff_price > 0
+                    else TransactionType.REFUND
+                ),
+                amount=abs(diff_price),
+                payment_method_id=payment_method_id,
+            )
+            order["payment_history"].append(new_payment_record.to_dict())
+
+        if "gift_card" in payment_method_id:
+            pm = users[order["user_id"]]["payment_methods"][payment_method_id]
+            pm["balance"] = round(pm["balance"] - diff_price, 2)
+
+        used_line_indices = set()
+        for item_id, new_item_id in zip(item_ids, new_item_ids):
+            for idx, row in enumerate(order["items"]):
+                if idx in used_line_indices:
+                    continue
+                if row["item_id"] == item_id:
+                    used_line_indices.add(idx)
+                    product_id = row["product_id"]
+                    variant = products[product_id]["variants"][new_item_id]
+                    row["item_id"] = new_item_id
+                    row["price"] = variant["price"]
+                    row["options"] = variant["options"]
+                    if "name" in products[product_id]:
+                        row["name"] = products[product_id]["name"]
+                    break
+
+        order["status"] = "pending (item modified)"
 
         ############################################################
         # STUDENT IMPLEMENTATION END

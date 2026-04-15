@@ -28,8 +28,12 @@ class FindUserIdByNameZip(Tool):
         # last name (both case-insensitive), and zip code (exact) match the
         # arguments. On the first match, record the user_id and stop.
         ############################################################
-        for temp_user_id in data["users"]:
-            if temp_user_id["name"]["first_name"].lower() == first_name.lower() and temp_user_id["name"]["last_name"].lower() == last_name.lower() and temp_user_id["address"]["zip"] == zip:
+        for temp_user_id, profile in data["users"].items():
+            if (
+                profile["name"]["first_name"].lower() == first_name.lower()
+                and profile["name"]["last_name"].lower() == last_name.lower()
+                and profile["address"]["zip"] == zip
+            ):
                 user_id = temp_user_id
                 break
 
