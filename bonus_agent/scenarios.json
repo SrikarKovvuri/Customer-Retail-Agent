@@ -1,0 +1,85 @@
+{
+    "schema_version": "v1",
+    "scenarios": [
+        {
+            "scenario_id": "index_error_beginner",
+            "user_id": "user_0000",
+            "goal": "You have Python code that crashes with an IndexError and you want to understand why and how to fix it. You tried accessing a list element but got 'list index out of range'. Ask the agent to help you fix it.",
+            "agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+            "user_profile": "You are Alex, a beginner programmer learning Python for a data science bootcamp. You are 24 years old, enthusiastic but easily frustrated when things don't work. You have basic programming knowledge but struggle with understanding error messages. You prefer simple, clear explanations without too much technical jargon. When the agent explains something, you might ask a follow-up question if you're confused.",
+            "knowledge": [
+                {
+                    "content": "Your buggy code:\n\nnums = [1, 2, 3]\nprint(nums[3])\n\nError you see:\nIndexError: list index out of range"
+                }
+            ],
+            "origin": {
+                "goal_raw": "Fix IndexError in list access",
+                "target_agent_capability": "debugging IndexError and explaining list indexing"
+            }
+        },
+        {
+            "scenario_id": "mutable_default_intermediate",
+            "user_id": "user_0001",
+            "goal": "You have a function that behaves strangely - it's supposed to append to a new list each time but it's accumulating values across calls. You're confused about what's happening. Ask the agent to help debug this behavior.",
+            "agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+            "user_profile": "You are Jordan, an intermediate developer with 2 years of Python experience working at a startup. You are 28 years old, analytical, and like to understand the 'why' behind bugs. You appreciate detailed technical explanations and want to learn best practices. You're patient and willing to test suggested fixes.",
+            "knowledge": [
+                {
+                    "content": "Your buggy code:\n\ndef append_to(val, lst=[]):\n    lst.append(val)\n    return lst\n\nprint(append_to(1))\nprint(append_to(2))\nprint(append_to(3))\n\nExpected output:\n[1]\n[2]\n[3]\n\nActual output:\n[1]\n[1, 2]\n[1, 2, 3]"
+                }
+            ],
+            "origin": {
+                "goal_raw": "Debug mutable default argument issue",
+                "target_agent_capability": "explaining mutable default arguments and Python object model"
+            }
+        },
+        {
+            "scenario_id": "infinite_loop_beginner",
+            "user_id": "user_0002",
+            "goal": "Your Python script is running forever and never finishing. You have a while loop that should print numbers but it just hangs. You're frustrated and need help understanding what's wrong.",
+            "agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+            "user_profile": "You are Sam, a complete beginner who just started learning Python last week. You are 19 years old, taking an intro CS course, and feeling overwhelmed. You need very basic explanations and encouragement. You might express frustration like 'I don't understand why this isn't working' or 'Programming is so confusing'. You appreciate patient, step-by-step guidance.",
+            "knowledge": [
+                {
+                    "content": "Your buggy code:\n\ni = 0\nwhile i < 10:\n    print(i)\n\nProblem: The program never stops running"
+                }
+            ],
+            "origin": {
+                "goal_raw": "Fix infinite loop by adding increment",
+                "target_agent_capability": "identifying missing loop increment and preventing infinite loops"
+            }
+        },
+        {
+            "scenario_id": "operator_precedence",
+            "user_id": "user_0003",
+            "goal": "You wrote a function to calculate the average of two numbers but it's giving wrong results. The math seems simple but somehow your answer is off. Ask the agent what's wrong with your calculation.",
+            "agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+            "user_profile": "You are Taylor, a high school student learning Python for an AP Computer Science class. You are 17 years old, smart and detail-oriented, but sometimes miss small syntax issues. You like to understand exactly where your logic went wrong. You're polite and receptive to feedback.",
+            "knowledge": [
+                {
+                    "content": "Your buggy code:\n\ndef avg(a, b):\n    return a + b / 2\n\nresult = avg(3, 7)\nprint(result)\n\nExpected: 5.0\nActual: 6.5"
+                }
+            ],
+            "origin": {
+                "goal_raw": "Fix operator precedence in average calculation",
+                "target_agent_capability": "explaining operator precedence and order of operations"
+            }
+        },
+        {
+            "scenario_id": "keyerror_dict_access",
+            "user_id": "user_0004",
+            "goal": "Your script crashes with a KeyError when trying to access a dictionary. You think the key should exist but Python says it doesn't. You want to know how to handle this safely.",
+            "agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+            "user_profile": "You are Morgan, a data analyst with basic Python skills. You are 31 years old, practical and focused on getting things working quickly. You deal with dictionaries and JSON data frequently. You prefer solutions that are robust and handle edge cases. You're experienced enough to understand technical concepts but appreciate concise explanations.",
+            "knowledge": [
+                {
+                    "content": "Your buggy code:\n\nuser_data = {'name': 'Alice', 'age': 30}\nprint(user_data['email'])\n\nError:\nKeyError: 'email'"
+                }
+            ],
+            "origin": {
+                "goal_raw": "Fix KeyError with safe dictionary access",
+                "target_agent_capability": "handling missing dictionary keys with .get() or exception handling"
+            }
+        }
+    ]
+}

@@ -1,0 +1,3614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulator Report</title>
+
+    <!-- PapaParse for CSV parsing -->
+
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Material Icons from Google Fonts -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            padding: 20px;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: #ffffff;
+            border: 1px solid #e8ecef;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .metric-icon {
+            float: right;
+            font-size: 48px;
+            opacity: 0.3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .metric-icon.material-icons {
+            font-size: 48px;
+            line-height: 1;
+        }
+
+        .performance-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 1px solid #e8ecef;
+        }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .performance-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .performance-item.helpfulness {
+            border-left-color: #10b981;
+        }
+
+        .performance-item.coherence {
+            border-left-color: #6366f1;
+        }
+
+        .performance-item.verbosity {
+            border-left-color: #f59e0b;
+        }
+
+        .performance-item.relevance {
+            border-left-color: #8b5cf6;
+        }
+
+        .performance-item.faithfulness {
+            border-left-color: #ec4899;
+        }
+
+        .performance-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: capitalize;
+            font-weight: 500;
+        }
+
+        .performance-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .performance-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .performance-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .performance-bar.score-excellent {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .performance-bar.score-good {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+        }
+
+        .performance-bar.score-needs-improvement {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .performance-bar.score-poor {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .score-label-badge {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            display: inline-block;
+        }
+
+        .score-label-badge.excellent {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .score-label-badge.good {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .score-label-badge.needs-improvement {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .score-label-badge.poor {
+            background-color: #fecaca;
+            color: #dc2626;
+        }
+
+        .methodology-note {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Scoring Methodology Section */
+        .methodology-section {
+            margin-top: 24px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .methodology-section .collapsible-header {
+            padding: 14px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .methodology-section .collapsible-header h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #334155;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .methodology-body {
+            padding: 24px;
+        }
+
+        .methodology-body h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 20px 0 10px 0;
+        }
+
+        .methodology-body h4:first-child {
+            margin-top: 0;
+        }
+
+        .methodology-body p,
+        .methodology-body li {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        .methodology-body ul {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+
+        .methodology-body li {
+            margin-bottom: 4px;
+        }
+
+        .methodology-body code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #0f172a;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .scale-table {
+            border-collapse: collapse;
+            margin: 10px 0 16px 0;
+            font-size: 13px;
+        }
+
+        .scale-table th,
+        .scale-table td {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .scale-table td:last-child {
+            white-space: normal;
+        }
+
+        .scale-table th {
+            text-align: left;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .methodology-ref {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .methodology-ref a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .methodology-ref a:hover {
+            text-decoration: underline;
+        }
+
+        /* Failure Breakdown Styles */
+        .failure-breakdown-section {
+            margin-top: 30px;
+        }
+
+        .failure-bar-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .failure-bar-label {
+            min-width: 220px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            text-transform: capitalize;
+        }
+
+        .failure-bar-track {
+            flex: 1;
+            height: 24px;
+            background-color: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .failure-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            min-width: fit-content;
+        }
+
+        .failure-bar-fill.no-failure {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .failure-bar-fill.has-failure {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .failure-bar-stat {
+            min-width: 100px;
+            font-size: 13px;
+            color: #64748b;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .qual-metric-group {
+            margin-bottom: 24px;
+        }
+
+        .qual-metric-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: capitalize;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .qual-bar-wrapper .failure-bar-row {
+            cursor: pointer;
+            border-radius: 6px;
+            padding: 4px 8px;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        .qual-bar-wrapper .failure-bar-row:hover {
+            background: #f1f5f9;
+        }
+        .qual-bar-wrapper .qual-expand-icon {
+            font-size: 18px;
+            color: #94a3b8;
+            transition: transform 0.2s ease, color 0.2s ease;
+            margin-left: 4px;
+            flex-shrink: 0;
+        }
+        .qual-bar-wrapper .failure-bar-row:hover .qual-expand-icon {
+            color: #475569;
+        }
+        .qual-bar-wrapper.expanded .qual-expand-icon {
+            transform: rotate(180deg);
+            color: #3b82f6;
+        }
+        .qual-turn-details {
+            display: none;
+            margin: 0 0 12px 0;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #334155;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .qual-turn-details.open {
+            display: block;
+        }
+        .qual-turn-details .qual-turn-group {
+            margin-bottom: 6px;
+        }
+        .qual-turn-details .qual-turn-group:last-child {
+            margin-bottom: 0;
+        }
+        .qual-turn-details .qual-turn-conv-label {
+            font-weight: 600;
+            font-size: 12px;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+        .qual-turn-details .qual-turn-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .qual-turn-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid #bfdbfe;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .qual-turn-chip:hover {
+            background-color: #dbeafe;
+            color: #1e3a8a;
+            box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+        }
+        .qual-turn-details .qual-turn-empty {
+            color: #94a3b8;
+            font-style: italic;
+        }
+        .message-wrapper.highlight-turn > .message-container > .message-bubble {
+            box-shadow: 0 0 0 2px #3b82f6;
+            border-radius: 12px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Table Styles */
+        .table-section {
+            margin-top: 40px;
+        }
+
+        .table-container {
+            overflow-y: visible;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-section thead {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .table-section thead th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* Table column widths */
+        .table-section thead th:nth-child(1) {
+            width: 10%;
+        }
+
+        .table-section thead th:nth-child(2) {
+            width: 25%;
+            white-space: normal;
+        }
+
+        .table-section thead th:nth-child(3),
+        .table-section thead th:nth-child(4),
+        .table-section thead th:nth-child(5) {
+            width: 10%;
+        }
+
+        .table-section tbody tr {
+            border-bottom: 1px solid #e8ecef;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .table-section tbody tr:hover {
+            background-color: #f8fafc;
+            transform: scale(1.01);
+        }
+
+        .table-section tbody td {
+            padding: 16px;
+            font-size: 14px;
+            color: #000000;
+        }
+
+        /* Scenario ID cell with tooltip */
+        .table-section tbody td:nth-child(2) {
+            position: relative;
+        }
+
+        .has-tooltip {
+            border-bottom: 1px dotted #64748b;
+            cursor: help;
+        }
+
+        .user-goal-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background-color: #1f2937;
+            color: white;
+            font-size: 12px;
+            line-height: 1.5;
+            border-radius: 6px;
+            white-space: normal;
+            width: 300px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-goal-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1f2937;
+        }
+
+        tbody td:nth-child(2):hover .user-goal-tooltip {
+            opacity: 1;
+        }
+
+        /* Ensure tooltip appears above table row hover effect */
+        tbody td:nth-child(2) .user-goal-tooltip {
+            z-index: 1001;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.success {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-badge.done {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-badge.failed {
+            background-color: #fecaca;
+            color: #dc2626;
+        }
+
+        .chat-id {
+            font-family: 'Courier New', monospace;
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            background-color: #e5e7eb;
+            color: #1f2937;
+            padding: 24px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            font-size: 32px;
+            font-weight: 300;
+            color: #1f2937;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .info-section {
+            margin-bottom: 24px;
+        }
+
+        details.info-section {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+
+        details.info-section[open] {
+            padding-bottom: 16px;
+        }
+
+        details.info-section > summary {
+            list-style: none;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        details.info-section > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details.info-section > summary::before {
+            content: '▶';
+            font-size: 9px;
+            transition: transform 0.2s;
+            display: inline-block;
+            color: #64748b;
+        }
+
+        details.info-section[open] > summary::before {
+            transform: rotate(90deg);
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #1a1a1a;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
+        .conversation-section {
+            margin-top: 24px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+        }
+
+        .conversation-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        .message-wrapper {
+            display: flex;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .message-wrapper.user {
+            justify-content: flex-end;
+        }
+
+        .message-wrapper.assistant {
+            justify-content: flex-start;
+        }
+
+        .message-container {
+            display: flex;
+            max-width: 75%;
+            gap: 12px;
+        }
+
+        .message-wrapper.user .message-container {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+
+        .message-wrapper.user .message-avatar {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+
+        .message-wrapper.assistant .message-avatar {
+            background: #dbeafe;
+            color: #3b82f6;
+        }
+
+        .message-bubble {
+            position: relative;
+        }
+
+        .message-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .message-wrapper.user .message-label {
+            text-align: right;
+        }
+
+        .message-content {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .message-wrapper.user .message-content {
+            background: #f3f4f6;
+            color: #1f2937;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-wrapper.assistant .message-content {
+            background: #eff6ff;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Markdown content styles */
+        .message-content p {
+            margin: 0 0 8px 0;
+        }
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-content strong {
+            font-weight: 600;
+            color: inherit;
+        }
+
+        .message-content em {
+            font-style: italic;
+        }
+
+        .message-content code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .message-content pre {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .message-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .message-content ul,
+        .message-content ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .message-content li {
+            margin: 4px 0;
+        }
+
+        .message-content blockquote {
+            border-left: 3px solid rgba(0, 0, 0, 0.2);
+            padding-left: 12px;
+            margin: 8px 0;
+            color: rgba(0, 0, 0, 0.7);
+        }
+
+        .message-content a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+
+        .message-content a:hover {
+            color: #2563eb;
+        }
+
+        .message-content h1,
+        .message-content h2,
+        .message-content h3,
+        .message-content h4,
+        .message-content h5,
+        .message-content h6 {
+            margin: 12px 0 8px 0;
+            font-weight: 600;
+        }
+
+        .message-content h1 { font-size: 1.5em; }
+        .message-content h2 { font-size: 1.3em; }
+        .message-content h3 { font-size: 1.1em; }
+
+        /* Agent message expandable UI */
+        .message-expand-btn {
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .message-expand-btn:hover {
+            background-color: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .message-expand-icon {
+            font-size: 14px;
+            transition: transform 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .message-expand-icon.material-icons {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .message-expand-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .message-extra-info {
+            margin-top: 8px;
+            padding: 12px;
+            background: #fef2f2;
+            border-radius: 8px;
+            border-left: 3px solid #dc2626;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin-top 0.3s ease-out;
+        }
+
+        .message-extra-info.expanded {
+            max-height: 1000px;
+            opacity: 1;
+            margin-top: 8px;
+        }
+
+        .message-extra-info-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #991b1b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .message-extra-info-content {
+            font-size: 13px;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .message-extra-info.metrics-only {
+            background: #f8fafc;
+            border-left-color: #94a3b8;
+        }
+
+        .turn-metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .score-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #1e40af;
+            font-weight: 500;
+            cursor: help;
+        }
+
+        .qual-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid;
+            cursor: help;
+        }
+
+        .qual-badge.positive { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+        .qual-badge.neutral  { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+        .qual-badge.negative { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+
+        .failure-source-tag {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .failure-source-tag.trajectory { background: #ede9fe !important; color: #5b21b6 !important; border: 1px solid #c4b5fd; }
+        .failure-source-tag.tool-call  { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #7dd3fc; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .score-highlight {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        /* Unique Errors Section Styles */
+        .unique-errors-section {
+            margin-top: 40px;
+        }
+
+        .error-card {
+            background: white;
+            border: 1px solid #d9d9d9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .error-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .bug-badge {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .error-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1a1a1a;
+        }
+
+        .error-description {
+            color: #4a4a4a;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .suggested-fix-label {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .suggested-fix-text {
+            color: #4a4a4a;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .error-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .occurrence-badge {
+            background-color: #d4183e;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .category-badge {
+            background-color: #f3f4f6;
+            color: #374151;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid #e5e7eb;
+        }
+
+        .severity-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .severity-critical { background-color: #991b1b; color: white; }
+        .severity-high { background-color: #d4183e; color: white; }
+        .severity-medium { background-color: #d97706; color: white; }
+        .severity-low { background-color: #6b7280; color: white; }
+
+        .fix-disclaimer {
+            margin-top: 16px;
+            padding: 10px 14px;
+            background-color: #f8fafc;
+            border-left: 3px solid #94a3b8;
+            color: #64748b;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .divider {
+            border-top: 1px solid #e5e7eb;
+            margin: 10px 0;
+        }
+
+        .error-conversations {
+            margin-top: 12px;
+        }
+
+        .error-conversations-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .error-conversations-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chat-id-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid #bfdbfe;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .chat-id-chip:hover {
+            background-color: #dbeafe;
+            color: #1e3a8a;
+            box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Snippet expand/collapse styles */
+        .snippet-toggle-btn {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .snippet-toggle-btn:hover {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .snippet-expand-icon {
+            font-size: 14px;
+            transition: transform 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .snippet-expand-icon.material-icons {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .snippet-expand-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .snippet-container {
+            margin-top: 8px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+        }
+
+        .snippet-container.expanded {
+            max-height: 2000px;
+            opacity: 1;
+        }
+
+        .snippet-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .snippet-header {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .snippet-message {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .snippet-message strong {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Collapsible styles */
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .arrow-icon {
+            font-size: 24px;
+            transition: transform 0.3s ease;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .arrow-icon.material-icons {
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .arrow-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .collapsible-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            max-height: 10000px; /* Arbitrary large height */
+            opacity: 1;
+            overflow: hidden;
+        }
+
+        .collapsible-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        /* Info icon and tooltip styles */
+        .info-icon-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 6px;
+            cursor: help;
+        }
+
+        .info-icon {
+            font-size: 16px;
+            color: #64748b;
+            opacity: 0.7;
+            transition: opacity 0.2s ease, color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+        }
+
+        .info-icon:hover {
+            opacity: 1;
+            color: #3b82f6;
+        }
+
+        .info-icon.material-icons {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background-color: #1f2937;
+            color: white;
+            font-size: 12px;
+            line-height: 1.5;
+            border-radius: 6px;
+            white-space: normal;
+            width: 250px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1f2937;
+        }
+
+        .info-icon-wrapper:hover .tooltip {
+            opacity: 1;
+        }
+
+        /* Table header info icon */
+        .table-section thead th {
+            position: relative;
+        }
+
+        .table-section thead th .info-icon-wrapper {
+            margin-left: 4px;
+        }
+
+        /* Table header tooltips are handled by JS (position: fixed)
+           to avoid clipping from border-collapse: collapse */
+        .table-section thead th .tooltip {
+            display: none;
+        }
+
+        /* Global JS-managed tooltip */
+        #globalTooltip {
+            position: fixed;
+            z-index: 9999;
+            padding: 8px 12px;
+            background-color: #1f2937;
+            color: white;
+            font-size: 12px;
+            line-height: 1.5;
+            border-radius: 6px;
+            white-space: normal;
+            width: 250px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        #globalTooltip.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="globalTooltip"></div>
+    <div class="container">
+        <div class="header">
+            <h1 id="reportTitle">Simulator Report</h1>
+            <div id="evaluationPipeline" style="display:none; margin-top:8px; color:#64748b; font-size:14px;"></div>
+        </div>
+
+        <div class="section-title">Metrics</div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon material-icons">forum</div>
+                <div class="metric-label">Total Conversations</div>
+                <div class="metric-value" id="totalConversations">-</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon material-icons">sync</div>
+                <div class="metric-label">Avg Turns per Conversation</div>
+                <div class="metric-value" id="avgTurns">-</div>
+            </div>
+        </div>
+
+        <div class="performance-section">
+            <div class="section-title">Performance Metrics</div>
+            <div class="performance-grid" id="performanceGrid">
+                <!-- Performance metrics will be inserted here -->
+            </div>
+            <div class="methodology-section">
+                <div class="collapsible-header" onclick="toggleMethodology()">
+                    <h3>
+                        <span class="material-icons" style="font-size: 18px; color: #667eea;">science</span>
+                        How Scores Are Computed
+                        <span class="arrow-icon material-icons collapsed" id="methodologyArrow">expand_more</span>
+                    </h3>
+                </div>
+                <div id="methodologyContent" class="collapsible-content collapsed">
+                    <div class="methodology-body">
+
+                        <h4>Metric Definitions</h4>
+                        <p>Each turn is evaluated on five quantitative metrics using LLM-as-a-judge:</p>
+                        <ul>
+                            <li><strong>Helpfulness</strong> &mdash; how effectively the response addresses the user's request</li>
+                            <li><strong>Coherence</strong> &mdash; logical flow and consistency of the response</li>
+                            <li><strong>Verbosity</strong> &mdash; response length appropriateness (inverted: higher = more concise)</li>
+                            <li><strong>Relevance</strong> &mdash; how on-topic the response is relative to the user's query</li>
+                            <li><strong>Faithfulness</strong> &mdash; accuracy relative to the provided knowledge base (only flags contradictions, not missing information)</li>
+                        </ul>
+
+                        <h4>Score Scale</h4>
+                        <table class="scale-table">
+                            <thead>
+                                <tr>
+                                    <th>Range</th>
+                                    <th>Label</th>
+                                    <th>Meaning</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>1.0 &ndash; 2.0</td><td>Poor</td><td>Response fails to meet basic expectations</td></tr>
+                                <tr><td>2.0 &ndash; 3.0</td><td>Needs Improvement</td><td>Partially addresses the task but has significant gaps</td></tr>
+                                <tr><td>3.0 &ndash; 4.0</td><td>Good</td><td>Adequately addresses the task with minor issues</td></tr>
+                                <tr><td>4.0 &ndash; 5.0</td><td>Excellent</td><td>Fully addresses the task with high quality</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Behaviour Failure Detection</h4>
+                        <p>
+                            If any turn-level metric scores below <code>3.0</code>, a qualitative behaviour failure
+                            evaluation is triggered. The threshold of 3.0 ("Good") was chosen because scores below
+                            this indicate the response has significant gaps worth diagnosing. Failure categories include:
+                        </p>
+                        <ul>
+                            <li><strong>Failure to ask for clarification</strong> &mdash; agent proceeds with an ambiguous request instead of asking</li>
+                            <li><strong>Repetition</strong> &mdash; redundant restatement within or across turns</li>
+                            <li><strong>Disobey user request</strong> &mdash; agent ignores or misinterprets a clear request</li>
+                            <li><strong>Lack of specific information</strong> &mdash; correct but generic/incomplete answer</li>
+                            <li><strong>False information</strong> &mdash; hallucinated or factually incorrect content</li>
+                        </ul>
+                        <p>
+                            Each score includes an LLM-generated reasoning explaining why the score was given.
+                            For turns with behaviour failures, the detailed failure reason is shown in the
+                            conversation modal under "Issue Details".
+                        </p>
+
+                        <h4>Conversation Score Formula</h4>
+                        <p>Each conversation receives a <strong>Final Score</strong> (0&ndash;1) computed as:</p>
+                        <p style="margin: 12px 0; padding: 10px 16px; background: #f8fafc; border-radius: 6px; font-size: 14px;">
+                            <code>final_score = turn_success_ratio &times; 0.75 + goal_completion &times; 0.25</code>
+                        </p>
+                        <ul>
+                            <li><strong>Turn Success Ratio</strong> (weight: 75%) = <code>(total_turns &minus; behaviour_failures) / total_turns</code>.
+                                Measures the fraction of turns without agent behavior failures.
+                                Weighted higher because consistent turn-level quality is the primary indicator
+                                of a reliable agent.</li>
+                            <li><strong>Goal Completion</strong> (weight: 25%) = <code>1</code> if the user's goal was successfully addressed,
+                                <code>0</code> otherwise. Evaluated by LLM at conversation end.
+                                Weighted lower because an agent can complete the goal while still exhibiting
+                                problematic behaviour in individual turns.</li>
+                        </ul>
+                        <p>Conversation status is determined by the final score:</p>
+                        <ul>
+                            <li><code>1.0</code> = <strong>Done</strong> &mdash; perfect score, no failures</li>
+                            <li><code>&ge; 0.6</code> = <strong>Partial Failure</strong> &mdash; goal may be met but with some turn-level issues</li>
+                            <li><code>&lt; 0.6</code> = <strong>Failed</strong> &mdash; significant quality issues</li>
+                        </ul>
+
+                        <h4>Unique Errors</h4>
+                        <p>
+                            After all turns are evaluated, the agent behavior failure reasons are collected and
+                            deduplicated across conversations using an LLM. This produces a list of unique errors,
+                            each with a root cause description and the specific conversation turns where it occurred.
+                            For automated fix suggestions, see <a href="https://arklex.ai" target="_blank" rel="noopener">arklex.ai</a>.
+                        </p>
+
+                        <div class="methodology-ref">
+                            For more on agent simulation evaluation, see the
+                            <a href="https://arxiv.org/pdf/2510.11997" target="_blank" rel="noopener">SAGE paper</a>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Qualitative Metrics Distribution -->
+        <div class="failure-breakdown-section" id="qualMetricsSection" style="display: none;">
+            <div class="section-title">Qualitative Metrics</div>
+            <div id="qualMetricsContent">
+                <!-- Qual metric distributions will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Unique Errors Section -->
+        <div class="unique-errors-section" id="uniqueErrorsSection" style="display: none;">
+            <div class="section-title collapsible-header" onclick="toggleUniqueErrors()">
+                <span>Unique Errors</span>
+                <span class="arrow-icon material-icons" id="uniqueErrorsArrow">expand_more</span>
+            </div>
+            <div id="uniqueErrorsContent" class="collapsible-content">
+                <div style="margin-bottom: 20px; color: #64748b; font-size: 14px;">
+                    Identified unique errors by analyzing and duplicating recurring failure patterns.
+                </div>
+                <div id="uniqueErrorsList">
+                    <!-- Unique errors will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversations Table -->
+        <div class="table-section">
+            <div class="section-title"><span class="material-icons" style="vertical-align: middle; font-size: 20px; margin-right: 8px;">forum</span>Conversations</div>
+            <div class="table-container">
+                <table id="conversationsTable">
+                    <thead>
+                        <tr>
+                            <th>chat id</th>
+                            <th>scenario id</th>
+                            <th>
+                                goal completion score
+                                <span class="info-icon-wrapper">
+                                    <span class="info-icon material-icons">info</span>
+                                    <span class="tooltip">goal completion score indicates whether the agent has completed the goal of the user (ranges between 0-1).</span>
+                                </span>
+                            </th>
+                            <th>
+                                final score
+                                <span class="info-icon-wrapper">
+                                    <span class="info-icon material-icons">info</span>
+                                    <span class="tooltip">a weighted sum of turn_success_ratio and goal_completion_score (goal_completion_weight = 0.25, turn_success_ratio_weight = 0.75). ranges between 0-1.</span>
+                                </span>
+                            </th>
+                            <th>
+                                status
+                                <span class="info-icon-wrapper">
+                                    <span class="info-icon material-icons">info</span>
+                                    <span class="tooltip">the status of the conversation based on final_score:<br><br><strong>done:</strong> final_score == 1.0 - perfect performance with no agent behavior failures and goal completed.<br><br><strong>partial failure:</strong> final_score > 0.6 - some agent behavior failures or goal not completed, but performance is acceptable.<br><br><strong>failed:</strong> final_score ≤ 0.6 - too many agent behavior failures or goal not completed, indicating poor performance.</span>
+                                </span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="conversationsTableBody">
+                        <!-- Table rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Evaluation Prompts Appendix -->
+        <div id="promptsAppendixSection" style="display:none; margin-top:40px;">
+            <div class="section-title collapsible-header" onclick="togglePromptsAppendix()">
+                <span class="material-icons" style="font-size:20px;">description</span>
+                Evaluation Prompts Appendix
+                <span class="arrow-icon material-icons collapsed" id="promptsAppendixArrow">expand_more</span>
+            </div>
+            <div id="promptsAppendixContent" class="collapsible-content collapsed">
+                <div id="promptsAppendixBody" style="padding:16px 0;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Conversation Details -->
+    <div id="conversationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Conversation Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- EMBEDDED DATA -->
+    <script>
+        // Configure marked.js options
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                breaks: true,        // Convert \n to <br>
+                gfm: true,           // GitHub Flavored Markdown
+                headerIds: false,    // Don't add IDs to headers
+                mangle: false        // Don't escape autolinked email addresses
+            });
+        }
+
+        // Embedded data - will be replaced by generate_html_report.py
+        const EMBEDDED_FINAL_REPORT = {
+  "total_conversations": 5,
+  "total_turns": 15,
+  "average_turns_per_conversation": 3.0,
+  "performance_metrics": {
+    "helpfulness": 4.1,
+    "coherence": 4.2,
+    "verbosity": -1.0,
+    "relevance": 3.9,
+    "faithfulness": 4.5,
+    "custom_metric_scores": {}
+  },
+  "agent_behavior_failures": null,
+  "qual_metric_distributions": {},
+  "evaluation_model": "gpt-4o-mini",
+  "evaluation_provider": "openai",
+  "evaluation_prompts": [
+    {
+      "category": "helpfulness",
+      "description": "Evaluates how effectively the assistant addresses the user's needs",
+      "prompts": [
+        {
+          "name": "system_prompt",
+          "text": "\nYou are given a conversation between user and AI assistant. Please evaluate the last message from the AI assistant based on the following criteria, assigning a score from 1 to 5. Use the detailed descriptions below to guide your assessment:\nYou need to output the score and reasoning in a VALID JSON only. DO NOT PREFIX WITH json language label. DO NOT USE MARKDOWN. DO NOT include explanations, markdown, or extra text. Use this format exactly:\n\n{{\n    \"score\": <integer 1-5>,\n    \"reason\": \"<reasoning>\"\n}}\nKeep the \"reason\" to 2-3 sentences maximum. Be specific and concise.\n\nHelpfulness:\nDescription: Determine the effectiveness and value of the AI assistant's responses in the last message in addressing the user's needs.\nEvaluation Criteria:\n• 5 - The response is extremely helpful and completely aligned with the spirit of what the prompt was asking for.\n• 4 - The response is mostly helpful and mainly aligned with what the user was looking for, but there is still some room for improvement.\n• 3 - The response is partially helpful but misses the overall goal of the user's query/input in some way. The response did not fully satisfy what the user was looking for.\n• 2 - The response is borderline unhelpful and mostly does not capture what the user was looking for, but it is still usable and helpful in a small way.\n• 1 - The response is not useful or helpful at all. The response completely missed the essence of what the user wanted.\n"
+        },
+        {
+          "name": "user_prompt",
+          "text": "\nHere is the conversation between user and AI assistant:\n{full_conversation}\n\nEvaluation Form:\n"
+        }
+      ]
+    },
+    {
+      "category": "coherence",
+      "description": "Evaluates logical flow and consistency of responses",
+      "prompts": [
+        {
+          "name": "system_prompt",
+          "text": "\nYou are given a conversation between user and AI assistant. Please evaluate the last message from the AI assistant based on the following criteria, assigning a score from 1 to 5. Use the detailed descriptions below to guide your assessment:\nYou need to output the score and reasoning in a VALID JSON only. DO NOT PREFIX WITH json language label. DO NOT USE MARKDOWN. DO NOT include explanations, markdown, or extra text. Use this format exactly:\n\n{{\n    \"score\": <integer 1-5>,\n    \"reason\": \"<reasoning>\"\n}}\nKeep the \"reason\" to 2-3 sentences maximum. Be specific and concise.\n\nCoherence:\nDescription: Determine the logical flow and consistency of the AI assistant's responses in the last message.\nEvaluation Criteria:\n• 5 (Perfectly Coherent and Clear) - The response is perfectly clear and self-consistent throughout. There are no contradictory assertions or statements, the writing flows logically and following the train of thought/story is not challenging.\n• 4 (Mostly Coherent and Clear) - The response is mostly clear and coherent, but there may be one or two places where the wording is confusing or the flow of the response is a little hard to follow. Over all, the response can mostly be followed with a little room for improvement.\n• 3 (A Little Unclear and/or Incoherent) - The response is a little unclear. There are some inconsistencies or contradictions, run on sentences, confusing statements, or hard to follow sections of the response.\n• 2 (Mostly Incoherent and/or Unclear) - The response is mostly hard to follow, with inconsistencies, contradictions, confusing logic flow, or unclear language used throughout, but there are some coherent/clear parts.\n• 1 (Completely Incoherent and/or Unclear) - The response is completely incomprehensible and no clear meaning or sensible message can be discerned from it.\n"
+        },
+        {
+          "name": "user_prompt",
+          "text": "\nHere is the conversation between user and AI assistant:\n{full_conversation}\n\nEvaluation Form:\n"
+        }
+      ]
+    },
+    {
+      "category": "verbosity",
+      "description": "Evaluates response length appropriateness",
+      "prompts": [
+        {
+          "name": "system_prompt",
+          "text": "\nYou are given a conversation between user and AI assistant. Please evaluate the last message from the AI assistant based on the following criteria, assigning a score from 1 to 5. Use the detailed descriptions below to guide your assessment:\nYou need to output the score and reasoning in a VALID JSON only. DO NOT PREFIX WITH json language label. DO NOT USE MARKDOWN. DO NOT include explanations, markdown, or extra text. Use this format exactly:\n\n{{\n    \"score\": <integer 1-5>,\n    \"reason\": \"<reasoning>\"\n}}\nKeep the \"reason\" to 2-3 sentences maximum. Be specific and concise.\n\nVerbosity:\nDescription: How concise is the last message from the AI assistant. Does it use more words than needed?\nEvaluation Criteria:\n• 5 (Verbose) - The response is particularly lengthy, wordy, and/or extensive with extra details given what the prompt requested from the assistant model. The response can be verbose regardless of if the length is due to repetition and incoherency or if it is due to rich and insightful detail.\n• 4 (Moderately Long) - The response is on the longer side but could still have more added to it before it is considered fully detailed or rambling.\n• 3 (Average Length) - The response isn't especially long or short given what the prompt is asking of the model. The length is adequate for conveying a full response but isn't particularly wordy nor particularly concise.\n• 2 (Pretty Short) - The response is on the shorter side but could still have words, details, and/or text removed before it's at a bare minimum of what the response is trying to convey.\n• 1 (Succinct) - The response is short, to the point, and the most concise it can be. No additional information is provided outside of what is requested by the prompt (regardless of if the information or response itself is incorrect, hallucinated, or misleading. A response that gives an incorrect answer can still be succinct.).\n"
+        },
+        {
+          "name": "user_prompt",
+          "text": "\nHere is the conversation between user and AI assistant:\n{full_conversation}\n\nEvaluation Form:\n"
+        }
+      ]
+    },
+    {
+      "category": "relevance",
+      "description": "Evaluates how on-topic the response is",
+      "prompts": [
+        {
+          "name": "system_prompt",
+          "text": "\nYou are given a conversation between user and AI assistant. Please evaluate the last message from the AI assistant based on the following criteria, assigning a score from 1 to 5. Use the detailed descriptions below to guide your assessment:\nYou need to output the score and reasoning in a VALID JSON only. DO NOT PREFIX WITH json language label. DO NOT USE MARKDOWN. DO NOT include explanations, markdown, or extra text. Use this format exactly:\n\n{{\n    \"score\": <integer 1-5>,\n    \"reason\": \"<reasoning>\"\n}}\nKeep the \"reason\" to 2-3 sentences maximum. Be specific and concise.\n\nRelevance:\nDescription: How much the last message from the AI assistant is addressing the question/input from the customer and to what degree\nEvaluation Criteria:\n• 5 (Very Relevant) - The response is extremely relevant to the user's query/input. It is directly addressing the user's needs and concerns, and the response is not too long or too short.\n• 4 (Mostly Relevant) - The response is mostly relevant to the user's query/input, but there is some room for improvement.\n• 3 (Partially Relevant) - The response is partially relevant to the user's query/input, but there is some room for improvement.\n• 2 (Somewhat Relevant) - The response is somewhat relevant to the user's query/input, but there is some room for improvement.\n• 1 (Not Relevant) - The response is not relevant to the user's query/input at all.\n"
+        },
+        {
+          "name": "user_prompt",
+          "text": "\nHere is the conversation between user and AI assistant:\n{full_conversation}\n\nEvaluation Form:\n"
+        }
+      ]
+    },
+    {
+      "category": "faithfulness",
+      "description": "Evaluates accuracy relative to provided knowledge",
+      "prompts": [
+        {
+          "name": "system_prompt",
+          "text": "\nYou are given a conversation between user and AI assistant and the knowledge that assistant's response should be grounded. Please evaluate the last message from the AI assistant based on the following criteria, assigning a score from 1 to 5. Use the detailed descriptions below to guide your assessment:\nYou need to output the score and reasoning in a VALID JSON only. DO NOT PREFIX WITH json language label. DO NOT USE MARKDOWN. DO NOT include explanations, markdown, or extra text. Use this format exactly:\n\n{{\n    \"score\": <integer 1-5>,\n    \"reason\": \"<reasoning>\"\n}}\nKeep the \"reason\" to 2-3 sentences maximum. Be specific and concise.\n\nIMPORTANT: Only flag non-faithfulness when the agent response CONFLICTS with or CONTRADICTS the provided knowledge. Do NOT penalize responses that:\n- Do not use the knowledge (if knowledge is not relevant to the query)\n- Go beyond the knowledge (add information not in knowledge, as long as it doesn't contradict)\n- Are incomplete or missing details (unless those details contradict knowledge)\n\nEvaluation Criteria:\n• 5 - The response has NO conflicts or contradictions with the provided knowledge. The response may not use the knowledge, may go beyond it, or may be incomplete, but nothing stated contradicts what is in the knowledge base.\n• 4 - The response has minor conflicts or contradictions with the knowledge, but they are isolated and do not significantly undermine the overall accuracy. Most of the response aligns with the knowledge.\n• 3 - The response contains some conflicts or contradictions with the knowledge, but also has correct elements. The conflicts are noticeable but not pervasive.\n• 2 - The response has multiple conflicts or contradictions with the knowledge. Significant portions of the response directly contradict what is stated in the knowledge base.\n• 1 - The response is completely in conflict with the knowledge. All or nearly all information provided contradicts or conflicts with the provided knowledge base.\n"
+        },
+        {
+          "name": "user_prompt",
+          "text": "\nHere is the knowledge that assistant's response should be grounded:\n{knowledge}\n\nHere is the conversation between user and AI assistant:\n{full_conversation}\n\nEvaluation Form:\n"
+        }
+      ]
+    },
+    {
+      "category": "goal_completion",
+      "description": "Evaluates whether the user's goal was achieved",
+      "prompts": [
+        {
+          "name": "system_prompt",
+          "text": "\nYou are given a conversation between user and AI assistant. Please evaluate whether the user's goal has been successfully addressed by the AI assistant.\nYou need to output 1 for success or 0 for failure, and reasoning in a VALID JSON only. DO NOT PREFIX WITH json language label. DO NOT USE MARKDOWN. DO NOT include explanations, markdown, or extra text. Use this format exactly:\n\n{{\n    \"score\": <integer 1 or 0>,\n    \"reason\": \"<reasoning>\"\n}}\nKeep the \"reason\" to 2-3 sentences maximum. Be specific and concise.\n"
+        },
+        {
+          "name": "user_prompt",
+          "text": "\nHere is the conversation between user and AI assistant:\n{full_conversation}\n\nHere is user's goal: {goal}\n\nEvaluation Form:\n"
+        }
+      ]
+    },
+    {
+      "category": "agent_behavior_failure",
+      "description": "Detects agent behavior failures per turn",
+      "prompts": [
+        {
+          "name": "system_prompt",
+          "text": "\nYou are given a conversation between a user and an AI assistant. Identify agent behavior failures IN THE LAST ASSISTANT TURN ONLY using the categories below. Some categories require checking the provided knowledge, which will be supplied alongside the conversation when relevant.\n\nCRITICAL: You need to output in a VALID JSON only. DO NOT PREFIX WITH json language label. DO NOT USE MARKDOWN. DO NOT include explanations, markdown, or extra text. Use this format exactly:\n\nRequired JSON format:\n{\n    \"label\": \"disobey user request\" | \"lack of specific information\" | \"failure to ask for clarification\" | \"repetition\" | \"false information\" | \"no failure\",\n    \"reason\": \"<brief justification>\"\n}\n\nRules:\n- Always return valid JSON with exactly the keys: \"label\" and \"reason\" (in that order).\n- If no clear failure, set category to \"no failure\" and explain briefly in \"reason\".\n- Reasons must be concise, tied to the last reply. Do not reference external facts.\n- Use ONLY the exact category names provided above.\n\nUse the EXACT definitions and examples for these categories below.\n\nFailure to ask for Clarification\nDefinition: When the agent encounters an ambiguous, incomplete, or unclear user query but proceeds with an assumption instead of asking for clarification. When knowledge or context is available, the agent must use it to detect unclear terms, multiple possible matches, or missing information -- and generate a specific clarification question rather than assuming.\n\nExample 1:\nConversation up to the last assistant turn: [\nuser: What's the ded on my policy\nassistant: Your home insurance policy includes coverage for fire, theft, and liability. Would you like more details about your coverage?\n]\nOutput: {\"label\": \"failure to ask for clarification\", \"reason\": \"The user's query is unclear. The assistant should have asked for clarification on what they meant by 'ded' (likely 'deductible').\"}\n\nExample 2:\nConversation up to the last assistant turn: [\nuser: i wa\nassistant: Your home insurance policy has a $1,000 deductible for most claims. Is there anything else you'd like to know?\n]\nOutput: {\"agent_behavior_failure_category\": \"failure to ask for clarification\", \"reason\": \"The user's query is clearly cut-off, the agent should clarify instead of continuing the conversation.\"}\n\nExample 3:\nKnowledge: Available insurance products: [home insurance, auto insurance, travel insurance]\n\nConversation up to the last assistant turn: [\nuser: I need to file a clam for my car\nassistant: Your home insurance policy has a $1,000 deductible for most claims. Is there anything else you'd like to know?\n]\nOutput: {\"agent_behavior_failure_category\": \"failure to ask for clarification\", \"reason\": \"The user's query is unclear because 'clam' is likely a typo for 'claim'. The assistant should have asked for clarification and confirmed whether the user meant an auto insurance claim based on the mention of 'car'.\"}\n\nExample 4:\nKnowledge: Policy tier: Basic Form covers named perils only. Policy tier: Broad Form covers additional risks. Policy tier: Comprehensive Form covers all risks except exclusions.\n\nConversation up to the last assistant turn: [\nassistant: Hi there! How can I help you?\nuser: I want to upgrade my coverage\nassistant: Great! I can upgrade your policy to Comprehensive Form right away. This will give you the most complete protection available.\n]\n\nOutput: {\"label\": \"failure to ask for clarification\", \"reason\": \"The user did not specify which tier they want to upgrade to. The assistant should have clarified which coverage level the user is interested in rather than assuming Comprehensive Form.\"}\n\nRepetition\nDefinition: When the agent redundantly restates the same content within a single turn or across multiple turns without adding new value.\nExample:\nConversation up to the last assistant turn: [\nassistant: Hi there! How can I help you?\nuser: I need to update my address on my home insurance policy\nassistant: To update your address, please log into your account at xyzinsurance.com and navigate to \"My Policy\" then \"Update Details.\" You can also call our customer service line at 1-800-555-0199. If you have any other questions, feel free to ask!\nuser: I already tried the website and it's not working, can you help me directly?\nassistant: To update your address, please log into your account at xyzinsurance.com and navigate to \"My Policy\" then \"Update Details.\" You can also call our customer service line at 1-800-555-0199. If you have any other questions, feel free to ask!\n]\nOutput: {\"label\": \"repetition\", \"reason\": \"The assistant kept repeating the same response and added no new value.\"}\n\nDisobey user request\nDefinition: When the agent's response completely ignores the user request. The assumption here is that the user request is clear.\nExample:\n\nConversation up to the last assistant turn: [\nassistant: Hi there! How can I help you?\nuser: I need a copy of my policy documents in French\nassistant: What province are you located in? Coverage options vary by region.\nuser: Quebec\nassistant: In Quebec, home insurance is mandatory for mortgage holders. Our Basic Form policy starts at $800 per year and covers fire, theft, and liability. Would you like to get a quote?\n]\nOutput: {\"label\": \"disobey user request\", \"reason\": \"The agent incorrectly interpreted 'in French' as a question about Quebec coverage options, instead of the user's actual request for policy documents in the French language. The agent ignored the user's request entirely.\"}\n\nLack of specific information\nDefinition: When the agent provides only a generic or partial answer, omitting important elements necessary to fully address the user's query. This assumes the agent has the required knowledge and tools. IMPORTANT: This category only applies when knowledge is provided — without knowledge there is no ground truth for what the agent should have included, so do not flag this category if no knowledge is given. This category only applies when the information provided is CORRECT but incomplete. If any information provided contradicts the knowledge base, use \"false information\" instead.\nExample:\n\nKnowledge: To file a water damage claim, policyholders must submit: photos of all damage, a repair estimate from a licensed contractor, and receipts for any emergency repairs already completed.\n\nConversation up to the last assistant turn: [\nassistant: Hi there! How can I help you?\nuser: My basement flooded from a burst pipe. How do I file a claim?\nassistant: I'm sorry to hear about the flooding. You can file a claim by logging into your account or calling our claims line.\nuser: What documents do I need to submit with my claim?\nassistant: You'll need to provide documentation of the damage. Our claims team will guide you through the process. If you have any other questions, feel free to ask!\n]\nOutput: {\"label\": \"lack of specific information\", \"reason\": \"The knowledge specifies three required documents — photos of all damage, a contractor repair estimate, and emergency repair receipts — but the assistant gave only a vague reference to 'documentation'. The response is correct but omits all the required specifics.\"}\n\nFalse information\nDefinition: When the agent provides information that directly contradicts what is stated in the provided knowledge or context.\nExample 1:\nKnowledge: XYZ Insurance home deductibles range from $500 to $2,500 depending on the policy tier. Basic Form has a $1,000 standard deductible. Broad Form has a $750 standard deductible. Comprehensive Form has a $500 standard deductible.\n\nConversation up to the last assistant turn: [\nassistant: Hi there! How can I help you?\nuser: What is the deductible on the Basic Form home insurance?\nassistant: The Basic Form home insurance has a standard deductible of $500 per claim.\n]\nOutput: {\"label\": \"false information\", \"reason\": \"The assistant stated the Basic Form deductible is $500, but according to the knowledge, the Basic Form has a $1,000 standard deductible. The $500 deductible applies to the Comprehensive Form.\"}\n\nExample 2:\nKnowledge: XYZ Insurance water damage policy states that claims for appliances older than 15 years are excluded from coverage. There are no exceptions to this age limit.\n\nConversation up to the last assistant turn: [\nassistant: Hi there! How can I help you?\nuser: My 18-year-old water heater burst. Am I covered?\nassistant: While appliances over 15 years old are generally excluded, we can make exceptions on a case-by-case basis for well-maintained units. I'd recommend filing a claim and our adjusters will review it.\n]\nOutput: {\"label\": \"false information\", \"reason\": \"The knowledge explicitly states there are no exceptions to the 15-year age limit, but the assistant suggested case-by-case exceptions are possible. The response contradicts the knowledge base.\"}\n\nExample 3:\nKnowledge: Our pricing is based on the number of conversations and features you need. We offer flexible plans starting from $99/month for small businesses up to enterprise solutions with custom pricing. The basic plan includes up to 1,000 conversations per month.\n\nConversation up to the last assistant turn: [\nuser: What are your pricing plans?\nassistant: We offer plans starting from $49/month for small businesses with up to 500 conversations per month.\n]\nOutput: {\"label\": \"false information\", \"reason\": \"The assistant stated pricing starts at $49/month with 500 conversations, but the knowledge base states pricing starts at $99/month with 1,000 conversations. The assistant provided incorrect pricing information that contradicts the knowledge base.\"}\n\nNo Failure\nDefinition: When the agent's response is correct, helpful, and addresses the user's request without any clear failures.\nExample:\nConversation up to the last assistant turn: [assistant: Hi there! How can I help you?\nuser: How do I add my new car to my existing auto insurance policy?\nassistant: You can add a new vehicle to your policy by logging into your account at xyzinsurance.com and selecting \"Add Vehicle\" under your auto policy. You'll need the vehicle's make, model, year, and VIN number. Alternatively, you can call us at 1-800-555-0199 and an agent will update your policy over the phone.\nuser: Perfect, thanks! That's exactly what I needed.\nassistant: You're welcome! If you have any other questions about your auto insurance or other policies, feel free to ask.]\n\nOutput: {\"label\": \"no failure\", \"reason\": \"The assistant directly answered the user's request with accurate and relevant steps, and the user confirmed satisfaction.\"}\n"
+        },
+        {
+          "name": "user_prompt",
+          "text": "\n    Here is the user's goal for this conversation:\n    {user_goal}\n\n    Here is the knowledge/context that the assistant's response must be grounded in and should be used for clarification decisions:\n    {knowledge}\n\n    Conversation up to the last assistant turn:\n\n    {conversation}\n\n    agent behavior failure on the last assistant turn:\n"
+        }
+      ]
+    },
+    {
+      "category": "unique_error_detection",
+      "description": "Deduplicates and identifies unique errors across conversations",
+      "prompts": [
+        {
+          "name": "prompt",
+          "text": "\nGiven the failure cases of the bunch of conversations between customer and the assistant, your task is to:\nDeduplicate the failure cases and come up with the fine-grained unique errors (errors with the same *root cause* should be merged).\n\nReturn in this JSON structure:\n{{\n  \"unique_errors\": [\n    {{\n      \"agent_behavior_failure_category\": \"<agent_behavior_failure_category>\",\n      \"unique_error_description\": \"<unique_error_description>\",\n      \"occurrences\": [\"<chat_id_turn_id_1>\", \"<chat_id_turn_id_2>\", ...],\n    }}\n  ]\n}}\n\nRules:\n- Do not follow the error types from \"helpfulness\", \"verbosity\", \"faithfulness\", \"relevance\" anymore. Focus exclusively on the behaviour of the assistant.\n- The agent behavior failure must be the one identified in the specific failure cases provided.\n- Multiple unique errors can belong to the same agent behavior failure category.\n- Be fine-grained: e.g., under Lack of Specific Information, specify *exactly which information* was missing. Each distinct missing information item is a separate unique error.\n- Return the error types in JSON format, where `agent_behavior_failure_category` is one of the categories from the failure cases, `unique_error_description` is the fine-grained description, and `occurrences` is the list of chat_id_turn_id from the \"Item\" prefix.\n\nFailure cases:\n{items}\n\nReturn:\n"
+        }
+      ]
+    },
+    {
+      "category": "simulated_user",
+      "description": "System prompt template for the simulated user during conversations",
+      "prompts": [
+        {
+          "name": "default_template",
+          "text": "You are a user interacting with an agent through multiple turns.\nThe agent is supplied by the following conversation context:\n{{ scenario.agent_context }}\n\nYour profile is:\n{{ scenario.user_profile }}\n\nYou have the following goal when interacting with this agent:\n{{ scenario.goal }}\n\n{% if scenario.knowledge and scenario.knowledge|length == 1 %}\nHere is the content that you might be interested in and might have questions about:\n{{ scenario.knowledge[0].content }}\n\n{% elif scenario.knowledge and scenario.knowledge|length > 1 %}\nYou will receive reference knowledge in a user message immediately before each of your replies; use it when relevant to achieve your goal.\n{% endif %}\n\nRules:\n- Do not give away all the instruction at once. Only provide the information necessary for the current step.\n- Do not hallucinate information that is not provided in the instruction.\n- If the instruction goal is satisfied, generate '###STOP###' as a standalone message without anything else.\n- Do not repeat the exact instruction in the conversation.\n- Avoid using bullet points or lists.\n- Keep responses brief and under 50 words.\n- You are the user and the agent is the assistant. Do not flip the roles.\n\n{% if scenario.knowledge and scenario.knowledge|length > 1 %}\n- Ask only one question per turn.\n{% endif %}\n"
+        }
+      ]
+    }
+  ]
+};
+        const CHAT_ID_TO_LABEL = {
+  "17d5f4d5-aeb5-475d-8b01-13cecfcc9425": "Conversation 1",
+  "3904b13d-955d-4fd8-8ec9-6f75a1194061": "Conversation 2",
+  "6a18a041-374f-4509-a62d-cd46a60d4d00": "Conversation 3",
+  "b518c6a6-748e-4edf-b6da-cedeab4be9e0": "Conversation 4",
+  "c7ab9593-54f1-486c-858a-2f71677d1e29": "Conversation 5"
+};
+        const CUSTOM_METRIC_DESCRIPTIONS = {
+  "agent_behavior_failure": "Distribution of agent behavior failure types across all evaluated turns. Labels: false information, disobey user request, lack of specific information, failure to ask for clarification, repetition, no failure."
+};
+        const QUAL_LABEL_COLORS = {
+  "agent_behavior_failure": {
+    "no failure": "#22c55e",
+    "repetition": "#94a3b8",
+    "failure to ask for clarification": "#f59e0b",
+    "lack of specific information": "#f59e0b",
+    "disobey user request": "#f97316",
+    "false information": "#ef4444",
+    "unsafe action": "#dc2626",
+    "unsafe state": "#dc2626"
+  }
+} || {};
+        let simulateData = [
+  {
+    "conversation_id": "17d5f4d5-aeb5-475d-8b01-13cecfcc9425",
+    "scenario_id": "operator_precedence",
+    "conversation_history": [
+      {
+        "turn_id": 0,
+        "message_id": "b9badd2b-fc78-462a-a165-483116e9a797",
+        "role": "simulated_user",
+        "content": "I wrote a function to calculate the average of two numbers, but it's giving the wrong result. My code is:\n\n```python\ndef avg(a, b):\n    return a + b / 2\n\nresult = avg(3, 7)\nprint(result)\n```\n\nThe expected result is 5.0, but I'm getting 6.5. What’s wrong?",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 0,
+        "message_id": "b81160b1-c5fc-4a24-87c3-18a27fcf392d",
+        "role": "assistant",
+        "content": "The issue in your code is due to operator precedence. In the expression `a + b / 2`, the division (`/`) is performed before the addition (`+`). This means that `b / 2` is calculated first, and then `a` is added to that result.\n\nTo fix this, you need to ensure that both `a` and `b` are added together before dividing by 2. You can do this by using parentheses around the addition:\n\n```python\ndef avg(a, b):\n    return (a + b) / 2\n\nresult = avg(3, 7)\nprint(result)\n```\n\nWith this change, the average will be calculated correctly as expected.",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "6d74bed1-401e-495c-b4ec-07eea7810440",
+        "role": "simulated_user",
+        "content": "Thank you! That makes sense. I'll update my code to use parentheses around `a + b`. \n\nHere’s the corrected version:\n\n```python\ndef avg(a, b):\n    return (a + b) / 2\n\nresult = avg(3, 7)\nprint(result)\n```\n\nNow it should give the correct result. I appreciate your help!",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "c00b03b2-5ff4-4e52-95b0-316d8d45775c",
+        "role": "assistant",
+        "content": "The code you provided is already correct. The use of parentheses around `a + b` is appropriate and ensures that the addition is performed before the division. \n\nWhen you run this code, it will correctly calculate the average of 3 and 7, which is 5.0. \n\nIf you have any specific issues or errors you encountered with this code, please let me know! Otherwise, it looks good as is.",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "138b9688-5b35-47d5-97e7-ee11a2dbaa07",
+        "role": "simulated_user",
+        "content": "Got it! I’ll run the corrected code now to confirm it computes the average correctly. Thank you for your guidance! If I have more questions, I’ll reach out.",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "1dad845b-8dbd-4cf0-8013-0a765abd52b1",
+        "role": "assistant",
+        "content": "It seems like you might have intended to provide some code for debugging or a specific question, but I don't see any code or context in your message. If you have any code that needs fixing or if you have questions, please share it, and I'll be happy to help!",
+        "tool_calls": null
+      }
+    ],
+    "simulated_user_prompt": {
+      "simulated_user_prompt_template": "You are a user interacting with an agent through multiple turns.\nThe agent is supplied by the following conversation context:\n{{ scenario.agent_context }}\n\nYour profile is:\n{{ scenario.user_profile }}\n\nYou have the following goal when interacting with this agent:\n{{ scenario.goal }}\n\n{% if scenario.knowledge and scenario.knowledge|length == 1 %}\nHere is the content that you might be interested in and might have questions about:\n{{ scenario.knowledge[0].content }}\n\n{% elif scenario.knowledge and scenario.knowledge|length > 1 %}\nYou will receive reference knowledge in a user message immediately before each of your replies; use it when relevant to achieve your goal.\n{% endif %}\n\nRules:\n- Do not give away all the instruction at once. Only provide the information necessary for the current step.\n- Do not hallucinate information that is not provided in the instruction.\n- If the instruction goal is satisfied, generate '###STOP###' as a standalone message without anything else.\n- Do not repeat the exact instruction in the conversation.\n- Avoid using bullet points or lists.\n- Keep responses brief and under 50 words.\n- You are the user and the agent is the assistant. Do not flip the roles.\n\n{% if scenario.knowledge and scenario.knowledge|length > 1 %}\n- Ask only one question per turn.\n{% endif %}\n",
+      "variables": {
+        "scenario.agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+        "scenario.goal": "You wrote a function to calculate the average of two numbers but it's giving wrong results. The math seems simple but somehow your answer is off. Ask the agent what's wrong with your calculation.",
+        "scenario.knowledge": [
+          "Your buggy code:\n\ndef avg(a, b):\n    return a + b / 2\n\nresult = avg(3, 7)\nprint(result)\n\nExpected: 5.0\nActual: 6.5"
+        ],
+        "scenario.user_profile": "You are Taylor, a high school student learning Python for an AP Computer Science class. You are 17 years old, smart and detail-oriented, but sometimes miss small syntax issues. You like to understand exactly where your logic went wrong. You're polite and receptive to feedback."
+      }
+    }
+  },
+  {
+    "conversation_id": "3904b13d-955d-4fd8-8ec9-6f75a1194061",
+    "scenario_id": "mutable_default_intermediate",
+    "conversation_history": [
+      {
+        "turn_id": 0,
+        "message_id": "21e822c7-c89a-4614-9dc1-ec5757ccf1bf",
+        "role": "simulated_user",
+        "content": "I noticed that the function is accumulating values across calls due to the mutable default argument. Each time you call `append_to`, you're modifying the same list. You can fix this by using `None` as a default value and initializing a new list inside the function if needed. Would you like me to show you how?",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 0,
+        "message_id": "62c3e2bb-7af3-49c5-a5cf-08a4c5fce2b2",
+        "role": "assistant",
+        "content": "Yes, you're correct about the issue with mutable default arguments in Python. When a mutable object like a list is used as a default argument, it retains changes across function calls, leading to unexpected behavior.\n\nTo fix this, you can set the default value of the argument to `None` and then initialize a new list inside the function if the argument is `None`. Here's how you can do it:\n\n```python\ndef append_to(lst=None):\n    if lst is None:\n        lst = []\n    lst.append(1)\n    return lst\n```\n\nThis way, each call to `append_to()` will create a new list unless a specific list is provided.",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "7265b9a4-9b57-4e67-8369-0d82510f2a34",
+        "role": "simulated_user",
+        "content": "You've provided a good explanation! However, don't forget to pass the value you're appending as an argument. Here's the corrected function:\n\n```python\ndef append_to(val, lst=None):\n    if lst is None:\n        lst = []\n    lst.append(val)\n    return lst\n```\n\nNow, it will work as expected. Would you like to test this version?",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "1ca8587e-24c8-4d14-a664-a7683b20a08c",
+        "role": "assistant",
+        "content": "The corrected function works as expected. It successfully appends values to a new list each time it is called, avoiding the issue of using a mutable default argument. \n\nHere’s the final version of the code:\n\n```python\ndef append_to(val, lst=None):\n    if lst is None:\n        lst = []\n    lst.append(val)\n    return lst\n```\n\nYou can now use this function to append values without encountering issues related to mutable default arguments.",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "5b3b20ff-ea16-4716-90ed-bb462b14d39f",
+        "role": "simulated_user",
+        "content": "Great! I'm glad it works for you now. Using `None` as a default value is a best practice to avoid such issues. If you have any more questions or need further assistance, feel free to ask!",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "33979a18-153d-4e16-b005-5843b2ebccea",
+        "role": "assistant",
+        "content": "It seems like you might have pasted a message intended for someone else. If you have any Python code that needs debugging or if you have a specific question, please share it, and I'll be happy to help!",
+        "tool_calls": null
+      }
+    ],
+    "simulated_user_prompt": {
+      "simulated_user_prompt_template": "You are a user interacting with an agent through multiple turns.\nThe agent is supplied by the following conversation context:\n{{ scenario.agent_context }}\n\nYour profile is:\n{{ scenario.user_profile }}\n\nYou have the following goal when interacting with this agent:\n{{ scenario.goal }}\n\n{% if scenario.knowledge and scenario.knowledge|length == 1 %}\nHere is the content that you might be interested in and might have questions about:\n{{ scenario.knowledge[0].content }}\n\n{% elif scenario.knowledge and scenario.knowledge|length > 1 %}\nYou will receive reference knowledge in a user message immediately before each of your replies; use it when relevant to achieve your goal.\n{% endif %}\n\nRules:\n- Do not give away all the instruction at once. Only provide the information necessary for the current step.\n- Do not hallucinate information that is not provided in the instruction.\n- If the instruction goal is satisfied, generate '###STOP###' as a standalone message without anything else.\n- Do not repeat the exact instruction in the conversation.\n- Avoid using bullet points or lists.\n- Keep responses brief and under 50 words.\n- You are the user and the agent is the assistant. Do not flip the roles.\n\n{% if scenario.knowledge and scenario.knowledge|length > 1 %}\n- Ask only one question per turn.\n{% endif %}\n",
+      "variables": {
+        "scenario.agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+        "scenario.goal": "You have a function that behaves strangely - it's supposed to append to a new list each time but it's accumulating values across calls. You're confused about what's happening. Ask the agent to help debug this behavior.",
+        "scenario.knowledge": [
+          "Your buggy code:\n\ndef append_to(val, lst=[]):\n    lst.append(val)\n    return lst\n\nprint(append_to(1))\nprint(append_to(2))\nprint(append_to(3))\n\nExpected output:\n[1]\n[2]\n[3]\n\nActual output:\n[1]\n[1, 2]\n[1, 2, 3]"
+        ],
+        "scenario.user_profile": "You are Jordan, an intermediate developer with 2 years of Python experience working at a startup. You are 28 years old, analytical, and like to understand the 'why' behind bugs. You appreciate detailed technical explanations and want to learn best practices. You're patient and willing to test suggested fixes."
+      }
+    }
+  },
+  {
+    "conversation_id": "6a18a041-374f-4509-a62d-cd46a60d4d00",
+    "scenario_id": "keyerror_dict_access",
+    "conversation_history": [
+      {
+        "turn_id": 0,
+        "message_id": "09bb1fd8-85f4-4b7a-a18f-064d32f9fcae",
+        "role": "simulated_user",
+        "content": "The KeyError occurs because the 'email' key doesn't exist in the dictionary. To handle this safely, you can use the `get()` method, which returns `None` if the key is missing, or specify a default value. Would you like to see an example?",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 0,
+        "message_id": "cceaea1f-a462-47c2-a89a-d2e7039a0f79",
+        "role": "assistant",
+        "content": "Yes, I can provide an example of how to use the `get()` method to handle a potential `KeyError` when accessing a dictionary. Here's a simple example:\n\n```python\ndata = {\n    'name': 'John Doe',\n    'age': 30\n}\n\n# Using get() to safely access the 'email' key\nemail = data.get('email', 'No email provided')\nprint(email)  # This will print 'No email provided' since 'email' key doesn't exist\n```\n\nIn this example, if the 'email' key is not found in the `data` dictionary, the `get()` method returns the default value 'No email provided' instead of raising a `KeyError`.",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "2bda3598-30c9-43f7-8c74-5ebc0c826a4c",
+        "role": "simulated_user",
+        "content": "That's exactly right! Using the `get()` method allows you to provide a default value when the key is absent, preventing any `KeyError`. Your example demonstrates this perfectly. Would you like to explore more about handling dictionary keys or any other topic?",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "8841870b-3f92-4d5b-b5f1-a41bc38d7220",
+        "role": "assistant",
+        "content": "It seems like you might have pasted a message that doesn't include any code or specific issue to address. If you have a piece of Python code that is causing an error or producing incorrect output, please share it, and I'll help you debug it!",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "97c950be-3f94-4f6f-a96e-05ae0fd6813c",
+        "role": "simulated_user",
+        "content": "It seems like there was a misunderstanding. If you have a specific piece of Python code causing an issue, please share it. I can help identify the problem and provide a solution!",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "db1b3ba7-26d8-4e3d-8f19-7e1a72917bdf",
+        "role": "assistant",
+        "content": "Please provide the Python code that is causing the issue, along with any error messages or incorrect output you are experiencing. I'll help you debug it!",
+        "tool_calls": null
+      }
+    ],
+    "simulated_user_prompt": {
+      "simulated_user_prompt_template": "You are a user interacting with an agent through multiple turns.\nThe agent is supplied by the following conversation context:\n{{ scenario.agent_context }}\n\nYour profile is:\n{{ scenario.user_profile }}\n\nYou have the following goal when interacting with this agent:\n{{ scenario.goal }}\n\n{% if scenario.knowledge and scenario.knowledge|length == 1 %}\nHere is the content that you might be interested in and might have questions about:\n{{ scenario.knowledge[0].content }}\n\n{% elif scenario.knowledge and scenario.knowledge|length > 1 %}\nYou will receive reference knowledge in a user message immediately before each of your replies; use it when relevant to achieve your goal.\n{% endif %}\n\nRules:\n- Do not give away all the instruction at once. Only provide the information necessary for the current step.\n- Do not hallucinate information that is not provided in the instruction.\n- If the instruction goal is satisfied, generate '###STOP###' as a standalone message without anything else.\n- Do not repeat the exact instruction in the conversation.\n- Avoid using bullet points or lists.\n- Keep responses brief and under 50 words.\n- You are the user and the agent is the assistant. Do not flip the roles.\n\n{% if scenario.knowledge and scenario.knowledge|length > 1 %}\n- Ask only one question per turn.\n{% endif %}\n",
+      "variables": {
+        "scenario.agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+        "scenario.goal": "Your script crashes with a KeyError when trying to access a dictionary. You think the key should exist but Python says it doesn't. You want to know how to handle this safely.",
+        "scenario.knowledge": [
+          "Your buggy code:\n\nuser_data = {'name': 'Alice', 'age': 30}\nprint(user_data['email'])\n\nError:\nKeyError: 'email'"
+        ],
+        "scenario.user_profile": "You are Morgan, a data analyst with basic Python skills. You are 31 years old, practical and focused on getting things working quickly. You deal with dictionaries and JSON data frequently. You prefer solutions that are robust and handle edge cases. You're experienced enough to understand technical concepts but appreciate concise explanations."
+      }
+    }
+  },
+  {
+    "conversation_id": "b518c6a6-748e-4edf-b6da-cedeab4be9e0",
+    "scenario_id": "infinite_loop_beginner",
+    "conversation_history": [
+      {
+        "turn_id": 0,
+        "message_id": "f35ad3e5-72e2-4648-b978-dc6228f55f5f",
+        "role": "simulated_user",
+        "content": "I don't understand why this isn't working. The program just keeps running and never stops! What should I do?",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 0,
+        "message_id": "85a116ca-d44f-455c-b98e-1497c64779d5",
+        "role": "assistant",
+        "content": "Please provide the buggy Python code you're working with, and I'll help you identify the issue.",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "e80d561a-aab2-4810-a10c-7522ab85c9fb",
+        "role": "simulated_user",
+        "content": "Sure! Here's my code:\n\n```python\ni = 0\nwhile i < 10:\n    print(i)\n```\n\nIt just keeps running and doesn't finish. What’s wrong?",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "00c233ff-160a-43c6-9911-d12b70d55c3d",
+        "role": "assistant",
+        "content": "The issue with your code is that the variable `i` is never incremented within the `while` loop. As a result, the condition `i < 10` remains true indefinitely, causing an infinite loop.\n\nTo fix this, you need to increment `i` in each iteration of the loop. Here's the corrected code:\n\n```python\ni = 0\nwhile i < 10:\n    print(i)\n    i += 1  # Increment i by 1\n``` \n\nThis will ensure that `i` eventually reaches 10, allowing the loop to terminate.",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "3e32c76a-6499-499b-aff2-c0d8a244206b",
+        "role": "simulated_user",
+        "content": "Okay, I see the problem now! I just need to add `i += 1` inside the loop. Let me try that. Thanks!",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "6666476f-9140-4cfb-be82-ca2f049ced69",
+        "role": "assistant",
+        "content": "It seems like you're trying to fix an issue related to a loop in your code. However, without seeing the actual code, I can't confirm if adding `i += 1` is the correct solution. \n\nIf you share the specific code snippet and describe the issue you're facing, I can help you identify the problem and confirm if your proposed fix is appropriate.",
+        "tool_calls": null
+      }
+    ],
+    "simulated_user_prompt": {
+      "simulated_user_prompt_template": "You are a user interacting with an agent through multiple turns.\nThe agent is supplied by the following conversation context:\n{{ scenario.agent_context }}\n\nYour profile is:\n{{ scenario.user_profile }}\n\nYou have the following goal when interacting with this agent:\n{{ scenario.goal }}\n\n{% if scenario.knowledge and scenario.knowledge|length == 1 %}\nHere is the content that you might be interested in and might have questions about:\n{{ scenario.knowledge[0].content }}\n\n{% elif scenario.knowledge and scenario.knowledge|length > 1 %}\nYou will receive reference knowledge in a user message immediately before each of your replies; use it when relevant to achieve your goal.\n{% endif %}\n\nRules:\n- Do not give away all the instruction at once. Only provide the information necessary for the current step.\n- Do not hallucinate information that is not provided in the instruction.\n- If the instruction goal is satisfied, generate '###STOP###' as a standalone message without anything else.\n- Do not repeat the exact instruction in the conversation.\n- Avoid using bullet points or lists.\n- Keep responses brief and under 50 words.\n- You are the user and the agent is the assistant. Do not flip the roles.\n\n{% if scenario.knowledge and scenario.knowledge|length > 1 %}\n- Ask only one question per turn.\n{% endif %}\n",
+      "variables": {
+        "scenario.agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+        "scenario.goal": "Your Python script is running forever and never finishing. You have a while loop that should print numbers but it just hangs. You're frustrated and need help understanding what's wrong.",
+        "scenario.knowledge": [
+          "Your buggy code:\n\ni = 0\nwhile i < 10:\n    print(i)\n\nProblem: The program never stops running"
+        ],
+        "scenario.user_profile": "You are Sam, a complete beginner who just started learning Python last week. You are 19 years old, taking an intro CS course, and feeling overwhelmed. You need very basic explanations and encouragement. You might express frustration like 'I don't understand why this isn't working' or 'Programming is so confusing'. You appreciate patient, step-by-step guidance."
+      }
+    }
+  },
+  {
+    "conversation_id": "c7ab9593-54f1-486c-858a-2f71677d1e29",
+    "scenario_id": "index_error_beginner",
+    "conversation_history": [
+      {
+        "turn_id": 0,
+        "message_id": "3231f6cc-5028-4f41-94da-09674ff95381",
+        "role": "simulated_user",
+        "content": "I see you're getting an IndexError because you're trying to access an index that doesn't exist in your list. The list `nums` has only three elements, with valid indices 0, 1, and 2. When you try to access `nums[3]`, it’s out of range. \n\nTo fix it, change the index to 2 or below. Would you like me to show you the corrected code?",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 0,
+        "message_id": "02f2d797-8f5e-4ba8-a9db-47633dbdc8b2",
+        "role": "assistant",
+        "content": "It seems like you are describing a common issue with list indexing in Python. However, I don't have the actual code you're referring to. Please provide the code snippet that is causing the `IndexError`, and I can help you correct it.",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "d4a51f67-1fdb-41d0-baab-dcaae22637ca",
+        "role": "simulated_user",
+        "content": "Your code is:\n\n```python\nnums = [1, 2, 3]\nprint(nums[3])\n```\n\nTo fix the error, you should change `print(nums[3])` to `print(nums[2])` or a lower index. Would you like more details on how that works?",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 1,
+        "message_id": "6f1cb922-c659-4293-b889-8abe1466308a",
+        "role": "assistant",
+        "content": "The code you provided attempts to access an index that is out of range for the list `nums`. In Python, list indices start at 0, so for the list `nums = [1, 2, 3]`, the valid indices are 0, 1, and 2. \n\nWhen you try to access `nums[3]`, it raises an `IndexError` because there is no fourth element in the list.\n\nTo fix the error, you can change `print(nums[3])` to `print(nums[2])`, which will correctly print the last element of the list, `3`.\n\nHere is the corrected code:\n\n```python\nnums = [1, 2, 3]\nprint(nums[2])\n```",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "f1f7611c-d4c3-49ee-9e21-e2324f86aa87",
+        "role": "simulated_user",
+        "content": "Exactly! Changing `print(nums[3])` to `print(nums[2])` will fix the error since it refers to the last element in the list. \n\nIf you run this corrected code, it should work perfectly. Let me know if you have any other questions!",
+        "tool_calls": null
+      },
+      {
+        "turn_id": 2,
+        "message_id": "162f0271-8724-47a5-a0af-eb0db869bbb4",
+        "role": "assistant",
+        "content": "It seems like you're referring to a piece of code that has an index error due to accessing an element that doesn't exist in the list. However, I don't have the original code to analyze or run. \n\nPlease provide the original code snippet that contains the error, and I can help you debug it and confirm the fix.",
+        "tool_calls": null
+      }
+    ],
+    "simulated_user_prompt": {
+      "simulated_user_prompt_template": "You are a user interacting with an agent through multiple turns.\nThe agent is supplied by the following conversation context:\n{{ scenario.agent_context }}\n\nYour profile is:\n{{ scenario.user_profile }}\n\nYou have the following goal when interacting with this agent:\n{{ scenario.goal }}\n\n{% if scenario.knowledge and scenario.knowledge|length == 1 %}\nHere is the content that you might be interested in and might have questions about:\n{{ scenario.knowledge[0].content }}\n\n{% elif scenario.knowledge and scenario.knowledge|length > 1 %}\nYou will receive reference knowledge in a user message immediately before each of your replies; use it when relevant to achieve your goal.\n{% endif %}\n\nRules:\n- Do not give away all the instruction at once. Only provide the information necessary for the current step.\n- Do not hallucinate information that is not provided in the instruction.\n- If the instruction goal is satisfied, generate '###STOP###' as a standalone message without anything else.\n- Do not repeat the exact instruction in the conversation.\n- Avoid using bullet points or lists.\n- Keep responses brief and under 50 words.\n- You are the user and the agent is the assistant. Do not flip the roles.\n\n{% if scenario.knowledge and scenario.knowledge|length > 1 %}\n- Ask only one question per turn.\n{% endif %}\n",
+      "variables": {
+        "scenario.agent_context": "You are a Python debugging assistant that helps users identify and fix bugs in their code by running it, explaining errors, and providing corrected versions.",
+        "scenario.goal": "You have Python code that crashes with an IndexError and you want to understand why and how to fix it. You tried accessing a list element but got 'list index out of range'. Ask the agent to help you fix it.",
+        "scenario.knowledge": [
+          "Your buggy code:\n\nnums = [1, 2, 3]\nprint(nums[3])\n\nError you see:\nIndexError: list index out of range"
+        ],
+        "scenario.user_profile": "You are Alex, a beginner programmer learning Python for a data science bootcamp. You are 24 years old, enthusiastic but easily frustrated when things don't work. You have basic programming knowledge but struggle with understanding error messages. You prefer simple, clear explanations without too much technical jargon. When the agent explains something, you might ask a follow-up question if you're confused."
+      }
+    }
+  }
+];
+        let convosData = [
+  {
+    "chat_id": "6a18a041-374f-4509-a62d-cd46a60d4d00",
+    "scenario_id": "keyerror_dict_access",
+    "goal": "Your script crashes with a KeyError when trying to access a dictionary. You think the key should exist but Python says it doesn't. You want to know how to handle this safely.",
+    "user_profile": "You are Morgan, a data analyst with basic Python skills. You are 31 years old, practical and focused on getting things working quickly. You deal with dictionaries and JSON data frequently. You prefer solutions that are robust and handle edge cases. You're experienced enough to understand technical concepts but appreciate concise explanations.",
+    "goal_completion_score": 0.0,
+    "final_score": 0.75,
+    "status": "Partial Failure",
+    "knowledge": [
+      "Your buggy code:\n\nuser_data = {'name': 'Alice', 'age': 30}\nprint(user_data['email'])\n\nError:\nKeyError: 'email'"
+    ],
+    "goal_completion_reason": "The AI assistant does not directly address the user's underlying issue with the KeyError, instead asking for more code. While it provides a helpful example initially, it fails to acknowledge or resolve the user's request for safe handling without a specific additional example or solution."
+  },
+  {
+    "chat_id": "b518c6a6-748e-4edf-b6da-cedeab4be9e0",
+    "scenario_id": "infinite_loop_beginner",
+    "goal": "Your Python script is running forever and never finishing. You have a while loop that should print numbers but it just hangs. You're frustrated and need help understanding what's wrong.",
+    "user_profile": "You are Sam, a complete beginner who just started learning Python last week. You are 19 years old, taking an intro CS course, and feeling overwhelmed. You need very basic explanations and encouragement. You might express frustration like 'I don't understand why this isn't working' or 'Programming is so confusing'. You appreciate patient, step-by-step guidance.",
+    "goal_completion_score": 1.0,
+    "final_score": 1.0,
+    "status": "Done",
+    "knowledge": [
+      "Your buggy code:\n\ni = 0\nwhile i < 10:\n    print(i)\n\nProblem: The program never stops running"
+    ],
+    "goal_completion_reason": "The AI assistant successfully identified the issue in the user's code and provided a correct solution by advising to increment the variable `i` within the loop. The user acknowledged understanding the problem and was able to proceed with the fix, indicating that their original goal was addressed."
+  },
+  {
+    "chat_id": "17d5f4d5-aeb5-475d-8b01-13cecfcc9425",
+    "scenario_id": "operator_precedence",
+    "goal": "You wrote a function to calculate the average of two numbers but it's giving wrong results. The math seems simple but somehow your answer is off. Ask the agent what's wrong with your calculation.",
+    "user_profile": "You are Taylor, a high school student learning Python for an AP Computer Science class. You are 17 years old, smart and detail-oriented, but sometimes miss small syntax issues. You like to understand exactly where your logic went wrong. You're polite and receptive to feedback.",
+    "goal_completion_score": 1.0,
+    "final_score": 1.0,
+    "status": "Done",
+    "knowledge": [
+      "Your buggy code:\n\ndef avg(a, b):\n    return a + b / 2\n\nresult = avg(3, 7)\nprint(result)\n\nExpected: 5.0\nActual: 6.5"
+    ],
+    "goal_completion_reason": "The AI assistant successfully identified the issue with the user's code, explained the problem with operator precedence, and provided the correct solution with the modified code. The user confirmed understanding and expressed gratitude, indicating that their goal was met."
+  },
+  {
+    "chat_id": "3904b13d-955d-4fd8-8ec9-6f75a1194061",
+    "scenario_id": "mutable_default_intermediate",
+    "goal": "You have a function that behaves strangely - it's supposed to append to a new list each time but it's accumulating values across calls. You're confused about what's happening. Ask the agent to help debug this behavior.",
+    "user_profile": "You are Jordan, an intermediate developer with 2 years of Python experience working at a startup. You are 28 years old, analytical, and like to understand the 'why' behind bugs. You appreciate detailed technical explanations and want to learn best practices. You're patient and willing to test suggested fixes.",
+    "goal_completion_score": 1.0,
+    "final_score": 1.0,
+    "status": "Done",
+    "knowledge": [
+      "Your buggy code:\n\ndef append_to(val, lst=[]):\n    lst.append(val)\n    return lst\n\nprint(append_to(1))\nprint(append_to(2))\nprint(append_to(3))\n\nExpected output:\n[1]\n[2]\n[3]\n\nActual output:\n[1]\n[1, 2]\n[1, 2, 3]"
+    ],
+    "goal_completion_reason": "The AI assistant successfully addressed the user's issue regarding mutable default arguments in the function. It provided a solution to avoid accumulation of values by using 'None' as the default value and initializing a new list inside the function, which aligns with the user's goal of debugging their code."
+  },
+  {
+    "chat_id": "c7ab9593-54f1-486c-858a-2f71677d1e29",
+    "scenario_id": "index_error_beginner",
+    "goal": "You have Python code that crashes with an IndexError and you want to understand why and how to fix it. You tried accessing a list element but got 'list index out of range'. Ask the agent to help you fix it.",
+    "user_profile": "You are Alex, a beginner programmer learning Python for a data science bootcamp. You are 24 years old, enthusiastic but easily frustrated when things don't work. You have basic programming knowledge but struggle with understanding error messages. You prefer simple, clear explanations without too much technical jargon. When the agent explains something, you might ask a follow-up question if you're confused.",
+    "goal_completion_score": 1.0,
+    "final_score": 1.0,
+    "status": "Done",
+    "knowledge": [
+      "Your buggy code:\n\nnums = [1, 2, 3]\nprint(nums[3])\n\nError you see:\nIndexError: list index out of range"
+    ],
+    "goal_completion_reason": "The AI assistant successfully addressed the user's goal by identifying the IndexError, explaining the cause, and providing the corrected code that resolves the issue. The conversation covered the user's problem comprehensively, ensuring clarity in understanding and resolving the error."
+  }
+];
+        let uniqueErrorsData = [];
+        let perTurnData = [
+  {
+    "chat_id": "6a18a041-374f-4509-a62d-cd46a60d4d00",
+    "turn_id": 0,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "coherence",
+        "value": 5.0,
+        "reason": "The response is perfectly clear and coherent, providing a logical flow from the user's question to the AI's example. The explanation of the `get()` method is direct and well-illustrated with relevant code, making it easy to understand.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 5.0,
+        "reason": "The response directly addresses the user's request for an example of using the `get()` method to handle a `KeyError`. It clearly demonstrates the method's functionality with relevant and easy-to-understand code.",
+        "metadata": null
+      },
+      {
+        "name": "helpfulness",
+        "value": 5.0,
+        "reason": "The response effectively addresses the user's request by providing a clear example of using the `get()` method to avoid a `KeyError`. It explains the functionality and includes relevant code, aligning perfectly with the user's inquiry.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's response accurately explains how to use the `get()` method to handle a potential `KeyError`, providing a relevant example without conflicting with the knowledge base. The explanation and example are clear and directly aligned with the user's request.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "6a18a041-374f-4509-a62d-cd46a60d4d00",
+    "turn_id": 1,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's response is consistent with the provided knowledge. It correctly addresses the user's inquiry and encourages further exploration without contradicting any information about the `KeyError` or the `get()` method.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 2.0,
+        "reason": "The last message from the AI assistant does not directly respond to the user's feedback or the possibility of further exploring dictionary handling. Instead, it misinterprets the user's statement and asks for new code, making it somewhat relevant but mostly off-track.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 2.0,
+        "reason": "The AI assistant's response is mostly unclear and does not directly address the user's follow-up about exploring more topics. Instead, it misinterprets the user's message, suggesting a lack of coherence in understanding the context of the conversation.",
+        "metadata": null
+      },
+      {
+        "name": "helpfulness",
+        "value": 3.0,
+        "reason": "The assistant's response acknowledges the user's feedback but doesn't continue the discussion about handling dictionary keys, which was the user's message. Instead, it requests code to debug, missing the opportunity to expand on the topic or provide further examples.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "6a18a041-374f-4509-a62d-cd46a60d4d00",
+    "turn_id": 2,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "helpfulness",
+        "value": 2.0,
+        "reason": "The response is borderline unhelpful as it fails to acknowledge the user's previous message indicating satisfaction with the example provided. Instead of building on that, it asks for additional code, which may not align with the user's intent to further explore the topic discussed.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's responses remain consistent and relevant to the user's inquiries about handling `KeyError` with dictionary access. There are no contradictions or conflicts with the provided knowledge regarding the use of the `get()` method.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 2.0,
+        "reason": "The AI assistant's response is somewhat relevant but does not directly address the user's confirmation of understanding. It fails to provide the next step or additional information relevant to the user's comment about handling dictionary keys, resulting in a lack of continuity in the conversation.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 3.0,
+        "reason": "The response contains some clarity issues as it repeats the request for code without acknowledging the user's previous messages. This creates a disconnect and makes it harder to follow the conversation. The logical flow is present, but the repetitiveness detracts from coherence.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "b518c6a6-748e-4edf-b6da-cedeab4be9e0",
+    "turn_id": 0,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "helpfulness",
+        "value": 5.0,
+        "reason": "The assistant's response is extremely helpful as it directly addresses the user's need for assistance with debugging by requesting specific code. This shows a clear intention to help resolve the user's issue effectively.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's response does not contain any conflicts or contradictions with the provided knowledge. It appropriately asks for the buggy code, aligning with the context of identifying the issue in the user's program.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 5.0,
+        "reason": "The response is highly relevant as it directly addresses the user's issue by asking for the code, which is essential for diagnosing the problem. It invites further information to provide a more tailored solution.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 5.0,
+        "reason": "The AI assistant's response is perfectly clear, directly addressing the user's request for help by asking for specific information needed to assist effectively. The logical flow is maintained, and the request for the Python code is relevant to solving the user's problem.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "b518c6a6-748e-4edf-b6da-cedeab4be9e0",
+    "turn_id": 1,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "coherence",
+        "value": 5.0,
+        "reason": "The response is perfectly clear and coherent, providing a straightforward identification of the issue along with a solution. The explanation logically flows from the problem statement to the corrected code, ensuring the user can understand and apply the fix easily.",
+        "metadata": null
+      },
+      {
+        "name": "helpfulness",
+        "value": 5.0,
+        "reason": "The response effectively identifies the problem in the user's code and provides a clear solution by explaining the necessary change. The assistant offers a corrected version of the code, addressing the user's issue comprehensively.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's response accurately identifies the problem with the provided code and correctly explains how to fix it. There are no conflicts or contradictions with the provided knowledge, and the solution aligns perfectly with the issue described.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 5.0,
+        "reason": "The assistant effectively identifies the problem in the user's code and provides a clear, direct solution. The explanation of the issue and the corrective action is concise and relevant to the user's query.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "b518c6a6-748e-4edf-b6da-cedeab4be9e0",
+    "turn_id": 2,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "helpfulness",
+        "value": 2.0,
+        "reason": "The response does acknowledge the user's confusion but ultimately lacks clarity and direct help related to the user's specific needs. The assistant incorrectly suggests it can't confirm the solution despite already providing relevant advice in earlier messages.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 2.0,
+        "reason": "The assistant acknowledges the user's fix of adding 'i += 1', but then implies that it cannot confirm the solution without seeing the code again, despite already reviewing it earlier. This inconsistency contradicts the earlier understanding of the provided buggy code.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 2.0,
+        "reason": "The assistant's response introduces confusion by suggesting the user did not share their code, despite earlier confirming the issue was understood. This inconsistency undermines the clarity of the message and may frustrate the user who has already provided the needed context.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 2.0,
+        "reason": "The response reiterates the need for specific code without addressing the user's current understanding of the issue. It fails to acknowledge the user's proposed solution of adding `i += 1`, which they already understood and planned to implement.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "17d5f4d5-aeb5-475d-8b01-13cecfcc9425",
+    "turn_id": 0,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant correctly identifies the issue with the user's code regarding operator precedence and provides a clear solution without any conflicts or contradictions to the provided knowledge. The explanation is concise and effectively resolves the user's question.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 5.0,
+        "reason": "The response directly addresses the user's issue by identifying the problem with operator precedence and providing a corrected version of the code. It is both clear and concise, ensuring the user understands how to resolve the issue effectively.",
+        "metadata": null
+      },
+      {
+        "name": "helpfulness",
+        "value": 5.0,
+        "reason": "The response accurately identifies the problem in the user's code related to operator precedence and provides a clear, corrected version of the function. It directly addresses the user's issue, ensuring they understand how to fix it and why the original code didn't work.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 5.0,
+        "reason": "The response is perfectly clear and self-consistent. It logically explains the issue with the code and provides a suitable correction, ensuring the user understands both the problem and the solution without confusion.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "17d5f4d5-aeb5-475d-8b01-13cecfcc9425",
+    "turn_id": 1,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's response accurately identifies and confirms the correctness of the user's updated code. There are no conflicts or contradictions with the provided knowledge, and the explanation effectively clarifies the initial issue.",
+        "metadata": null
+      },
+      {
+        "name": "helpfulness",
+        "value": 5.0,
+        "reason": "The response effectively clarifies that the user's corrected code is accurate and confirms the expected result. It provides assurance and invites further questions, demonstrating excellent support for the user's learning process.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 5.0,
+        "reason": "The AI's response is perfectly clear and coherent, explaining why the initial code was incorrect and confirming that the updated code is correct. The logical flow is consistent, and the assistant encourages further dialogue if there are additional issues.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 5.0,
+        "reason": "The AI's response directly addresses the user's concern about their corrected code. It confirms the correctness of the user's changes and offers to assist with any further issues, maintaining relevance and clarity throughout.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "17d5f4d5-aeb5-475d-8b01-13cecfcc9425",
+    "turn_id": 2,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "helpfulness",
+        "value": 4.0,
+        "reason": "The last message acknowledges the user's successful update and encourages further engagement, which is helpful. However, it misses the opportunity to confirm the user's success by directly addressing the completion of their task, which could enhance its helpfulness.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's response correctly identifies the issue with operator precedence in the user's code and provides a valid solution without any contradictions to the knowledge provided. It also reassures the user that the updated code will yield the expected result.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 3.0,
+        "reason": "The last message from the AI assistant is partially relevant, as it acknowledges the user's intent to confirm their code but overlooks the user's successful completion of the task. It doesn't engage with the user's current situation effectively, which could lead to confusion.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 4.0,
+        "reason": "The response is mostly clear and coherent, addressing the user's needs. However, the last sentence creates slight confusion by suggesting the user intended to provide additional code, which was not explicitly stated, potentially interrupting the flow of conversation.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "3904b13d-955d-4fd8-8ec9-6f75a1194061",
+    "turn_id": 0,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "helpfulness",
+        "value": 5.0,
+        "reason": "The response effectively addresses the user's concern about mutable default arguments by explaining the issue clearly and providing a correct solution. The demonstration with code is relevant and directly useful for the user, aligning well with their inquiry.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's response accurately identifies the issue with mutable default arguments and provides a valid solution by suggesting the use of `None` as a default value. There are no conflicts or contradictions with the provided knowledge.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 5.0,
+        "reason": "The response is clear and coherent, providing a logical explanation of the mutable default argument issue along with a correct solution. The code snippet effectively illustrates the fix, and the explanation flows logically, making it easy to understand.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 5.0,
+        "reason": "The response directly addresses the user's concern about mutable default arguments in Python and offers a clear solution. The explanation is concise, and it includes a relevant code example, making it highly useful for the user.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "3904b13d-955d-4fd8-8ec9-6f75a1194061",
+    "turn_id": 1,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "helpfulness",
+        "value": 4.0,
+        "reason": "The response effectively reinforces the user's correction and confirms that the function now works as intended. However, it could encourage the user to test the function further or provide examples of how to use it, enhancing interactivity and support.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 4.0,
+        "reason": "The response is mostly clear and coherent, explaining the corrected function effectively. However, there is a slight lack of engagement in asking if the user wants to test the function, which could improve the flow of the conversation.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 5.0,
+        "reason": "The response directly addresses the user's correction and confirms the functionality of the provided code. It reiterates the purpose of the function and how it resolves the mutable default argument issue, making the explanation clear and concise.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant correctly addressed the issue with mutable default arguments and provided a solution that aligns with the user's corrected version. There are no conflicts or contradictions with the provided knowledge, and the explanation is clear and accurate.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "3904b13d-955d-4fd8-8ec9-6f75a1194061",
+    "turn_id": 2,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "relevance",
+        "value": 3.0,
+        "reason": "The assistant acknowledges the user's comment about best practices but does not fully engage with the discussion around Python or the function in question. It could have provided more relevant follow-up or continued the technical dialogue.",
+        "metadata": null
+      },
+      {
+        "name": "helpfulness",
+        "value": 4.0,
+        "reason": "The response acknowledges the user's successful implementation and reinforces the best practice of using `None` for mutable arguments. While it invites further questions, it could be more engaging by offering specific examples or testing suggestions related to the user's context.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 5.0,
+        "reason": "The message is clear and coherent, directly addressing the user's potential misunderstanding by prompting them to share specific code or questions. The logical flow is well-maintained, and there are no contradictions or confusing statements.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's response accurately acknowledges the user's correction regarding the function and confirms that the revised code correctly avoids the issue with mutable default arguments. There are no contradictions or conflicts with the provided knowledge.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "c7ab9593-54f1-486c-858a-2f71677d1e29",
+    "turn_id": 0,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "faithfulness",
+        "value": 4.0,
+        "reason": "The assistant acknowledges the IndexError but implies it doesn't have access to the code snippet, which contradicts the user's description and provided knowledge. However, the main explanation about list indexing is correct and aligns with the knowledge.",
+        "metadata": null
+      },
+      {
+        "name": "helpfulness",
+        "value": 4.0,
+        "reason": "The response is mostly helpful as it acknowledges the issue with list indexing and asks for the relevant code snippet to provide further assistance. However, it could have been improved by offering a more direct suggestion or example of correcting the error instead of asking for more information.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 4.0,
+        "reason": "The response is mostly coherent and clarifies that the AI needs the code snippet to assist further. However, it could be slightly clearer about the error context and how the user can fix it without needing additional context.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 4.0,
+        "reason": "The assistant's response is mostly relevant as it acknowledges the user's description of the IndexError and prompts for the specific code snippet. However, it could have provided more immediate guidance based on the information already given by the user.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "c7ab9593-54f1-486c-858a-2f71677d1e29",
+    "turn_id": 1,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "helpfulness",
+        "value": 5.0,
+        "reason": "The response effectively addresses the user's issue by explaining the cause of the `IndexError` and providing a clear and correct solution. It also includes the corrected code, which adds to its overall helpfulness.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 5.0,
+        "reason": "The response clearly explains the indexing issue with the provided code and logically guides the user to the solution. The flow of information is coherent, providing both an explanation of the error and the corrected code in a structured manner.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 5.0,
+        "reason": "The assistant's response directly addresses the user's concern regarding the `IndexError` and provides a clear explanation of the issue, along with a corrected code example. It succinctly clarifies the indexing rules in Python and effectively resolves the user's query.",
+        "metadata": null
+      },
+      {
+        "name": "faithfulness",
+        "value": 5.0,
+        "reason": "The assistant's response accurately explains the `IndexError`, correctly identifies the valid indices for the list, and provides the right solution to fix the code. There are no contradictions or conflicts with the provided knowledge.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  },
+  {
+    "chat_id": "c7ab9593-54f1-486c-858a-2f71677d1e29",
+    "turn_id": 2,
+    "agent_behavior_failure_label": "skipped_good_performance",
+    "agent_behavior_failure_reason": "All metrics passed threshold, qualitative evaluation skipped",
+    "scores": [
+      {
+        "name": "faithfulness",
+        "value": 2.0,
+        "reason": "The assistant's response contains multiple contradictions with the user's explanation about the code. While it acknowledges the index error, it erroneously claims not to have the original code, despite the user providing it clearly. This undermines the effectiveness and clarity of the assistance.",
+        "metadata": null
+      },
+      {
+        "name": "coherence",
+        "value": 4.0,
+        "reason": "The assistant's response is mostly coherent and follows a logical progression regarding the `IndexError`. However, it includes a sentence that repeats the request for the original code, which could create slight confusion since the user has already provided it.",
+        "metadata": null
+      },
+      {
+        "name": "relevance",
+        "value": 3.0,
+        "reason": "The assistant acknowledges the user's explanation about the IndexError and summarizes the issue, but fails to address the user's request for confirmation on the corrected code. This response is only partially relevant since it doesn't engage with the user's follow-up or offer further help.",
+        "metadata": null
+      },
+      {
+        "name": "helpfulness",
+        "value": 4.0,
+        "reason": "The assistant effectively summarized the issue and provided a clear solution to the user's code problem. However, it could have been more proactive by immediately offering the corrected code instead of asking for the original code again, which was unnecessary at that point.",
+        "metadata": null
+      }
+    ],
+    "qual_scores": []
+  }
+];
+
+        // Score interpretation (matches Python score_label())
+        function scoreLabel(score) {
+            if (score < 1.0) return 'Poor';
+            if (score < 2.0) return 'Poor';
+            if (score < 3.0) return 'Needs Improvement';
+            if (score < 4.0) return 'Good';
+            return 'Excellent';
+        }
+
+        function scoreLabelClass(score) {
+            const label = scoreLabel(score);
+            return label.toLowerCase().replace(/\s+/g, '-');
+        }
+
+        // Human-readable label for a chat_id
+        function chatLabel(chatId) {
+            return CHAT_ID_TO_LABEL[chatId] || chatId;
+        }
+
+
+
+        // Render Unique Errors
+        function renderUniqueErrors() {
+            const container = document.getElementById('uniqueErrorsList');
+            const section = document.getElementById('uniqueErrorsSection');
+
+            if (!uniqueErrorsData || uniqueErrorsData.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            container.innerHTML = '';
+
+            // Count total turns for an occurrences object {conv_id: [turn_ids]}
+            function countOccurrences(occ) {
+                if (!occ || typeof occ !== 'object') return 0;
+                return Object.values(occ).reduce((sum, turns) =>
+                    sum + (Array.isArray(turns) ? turns.length : 1), 0);
+            }
+
+            // Sort errors by severity (critical first) then by occurrence count
+            const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+            const sorted = [...uniqueErrorsData].sort((a, b) => {
+                const sa = severityOrder[a.severity] ?? 2;
+                const sb = severityOrder[b.severity] ?? 2;
+                if (sa !== sb) return sa - sb;
+                // Secondary sort by occurrence count descending
+                return countOccurrences(b.occurrences) - countOccurrences(a.occurrences);
+            });
+
+            let hasSuggestedFixes = false;
+            sorted.forEach(error => {
+                // Calculate occurrences count from native object {conv_id: [turn_ids]}
+                let count = 0;
+                let chatIds = [];
+                const occurrencesObj = error.occurrences;
+                if (occurrencesObj && typeof occurrencesObj === 'object') {
+                    chatIds = Object.keys(occurrencesObj);
+                    Object.values(occurrencesObj).forEach(turns => {
+                        count += Array.isArray(turns) ? turns.length : 1;
+                    });
+                }
+
+                // Build conversations markup if we have chat IDs
+                let conversationsHtml = '';
+                if (chatIds.length > 0) {
+                    const chatLinks = chatIds
+                        .map(chatId => `
+                            <button
+                                class="chat-id-chip"
+                                data-chat-id="${escapeHtml(chatId)}"
+                                onclick="openModal(this.getAttribute('data-chat-id'))"
+                            >
+                                ${escapeHtml(chatLabel(chatId))}
+                            </button>
+                        `.trim())
+                        .join(' ');
+
+                    conversationsHtml = `
+                    <div class="divider"></div>
+                    <div class="error-conversations">
+                        <div class="error-conversations-label">Conversations</div>
+                        <div class="error-conversations-list">
+                            ${chatLinks}
+                        </div>
+                    </div>
+                    `;
+                }
+
+                // Build snippets markup
+                let snippetsHtml = '';
+                const snippets = Array.isArray(error.occurrence_snippets)
+                    ? error.occurrence_snippets : [];
+                if (snippets.length > 0) {
+                    const snippetId = 'snippet-' + Math.random().toString(36).substr(2, 9);
+                    const iconId = snippetId + '-icon';
+                    const snippetItems = snippets.map(s => `
+                        <div class="snippet-item">
+                            <div class="snippet-header">${escapeHtml(s.conversation_label)}, Turn ${s.turn_number + 1}</div>
+                            <div class="snippet-message"><strong>User:</strong> ${escapeHtml(s.user_message)}</div>
+                            <div class="snippet-message"><strong>Agent:</strong> ${escapeHtml(s.assistant_message)}</div>
+                        </div>
+                    `).join('');
+                    snippetsHtml = `
+                        <button class="snippet-toggle-btn" onclick="toggleSnippet('${snippetId}', '${iconId}')">
+                            <span class="snippet-expand-icon material-icons" id="${iconId}">expand_more</span>
+                            <span>Transcript Snippets (${snippets.length})</span>
+                        </button>
+                        <div class="snippet-container" id="${snippetId}">
+                            ${snippetItems}
+                        </div>
+                    `;
+                }
+
+                // Build suggested fix markup only when data exists
+                let suggestedFixHtml = '';
+                if (error.suggested_fix || error.best_module_fix_reasoning) {
+                    hasSuggestedFixes = true;
+                    suggestedFixHtml = `
+                    <div class="divider"></div>
+                    <div class="suggested-fix-label">Suggested Fix:</div>
+                    <div class="suggested-fix-text">
+                        ${error.suggested_fix || error.best_module_fix_reasoning}
+                    </div>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'error-card';
+
+                const occurrenceText = count === 1 ? '1 Occurrence' : `${count} Occurrences`;
+
+                const sev = (error.severity || 'medium').toLowerCase();
+                const sevClass = 'severity-' + sev;
+
+                card.innerHTML = `
+                    <div class="error-header">
+                        <span class="severity-badge ${sevClass}">${sev}</span>
+                        <span class="occurrence-badge">${occurrenceText}</span>
+                        <span class="category-badge">${error.agent_behavior_failure_category || 'General'}</span>
+                    </div>
+                    <div class="bug-badge">Bug</div>
+                    <div class="error-description">
+                        ${error.unique_error}
+                    </div>
+                    ${suggestedFixHtml}
+                    ${conversationsHtml}
+                    ${snippetsHtml}
+                `;
+
+                container.appendChild(card);
+            });
+
+            // Add disclaimer after all error cards, only if fixes were shown
+            if (hasSuggestedFixes) {
+                const disclaimer = document.createElement('div');
+                disclaimer.className = 'fix-disclaimer';
+                disclaimer.textContent = 'Note: Suggested fixes are module-level heuristics and may not apply to your architecture.';
+                container.appendChild(disclaimer);
+            }
+        }
+
+        // Toggle Scoring Methodology Section
+        function toggleMethodology() {
+            const content = document.getElementById('methodologyContent');
+            const arrow = document.getElementById('methodologyArrow');
+
+            content.classList.toggle('collapsed');
+            arrow.classList.toggle('collapsed');
+        }
+
+        // Toggle Unique Errors Section
+        function toggleUniqueErrors() {
+            const content = document.getElementById('uniqueErrorsContent');
+            const arrow = document.getElementById('uniqueErrorsArrow');
+
+            content.classList.toggle('collapsed');
+            arrow.classList.toggle('collapsed');
+        }
+
+        // Populate the conversations table
+        function populateTable() {
+            const tbody = document.getElementById('conversationsTableBody');
+            tbody.innerHTML = '';
+
+            const sortedConvos = [...convosData].sort((a, b) => {
+                const aNum = parseInt(a.chat_id.replace(/\D+/g, '')) || 0;
+                const bNum = parseInt(b.chat_id.replace(/\D+/g, '')) || 0;
+                return aNum - bNum;
+            });
+
+            sortedConvos.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.onclick = () => openModal(row.chat_id);
+
+                // Extract chat_id number (e.g., "conv_0" -> "0")
+                const chatIdNum = row.chat_id.replace('conv_', '');
+
+                // Clean status and determine status class
+                const cleanedStatus = cleanStatus(row.status) || '';
+                const status = cleanedStatus.toLowerCase();
+                let statusClass = 'failed';
+                if (status === 'success' || status === 'done') {
+                    statusClass = 'done';
+                }
+
+                tr.innerHTML = `
+                    <td><span class="chat-id">${chatLabel(row.chat_id)}</span></td>
+                    <td style="position:relative">
+                        ${row.goal ? `<span class="has-tooltip">${escapeHtml(row.scenario_id || '')}</span>` : escapeHtml(row.scenario_id || '')}
+                        ${row.goal ? `<span class="user-goal-tooltip"><strong>Goal:</strong> ${escapeHtml(row.goal)}</span>` : ''}
+                    </td>
+                    <td><span class="score-highlight">${parseFloat(row.goal_completion_score).toFixed(2)}</span></td>
+                    <td><span class="score-highlight">${parseFloat(row.final_score).toFixed(2)}</span></td>
+                    <td>
+                        <span class="status-badge ${statusClass}">
+                            ${cleanedStatus}
+                        </span>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Truncate text with ellipsis
+        function truncateText(text, maxLength) {
+            if (text.length > maxLength) {
+                return text.substring(0, maxLength) + '...';
+            }
+            return text;
+        }
+
+        // Escape HTML for safe display (both text content and attribute values)
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text == null ? '' : String(text);
+            // This escapes &, < and > via innerHTML, then we additionally escape quotes
+            return div.innerHTML
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Remove "EvaluationStatus." prefix from status string
+        function cleanStatus(status) {
+            if (!status) return '';
+            // Remove "EvaluationStatus." prefix if present
+            return status.replace(/^EvaluationStatus\./, '');
+        }
+
+        // Open modal with conversation details
+        function openModal(chatId, highlightTurnId) {
+            // Extract the numeric ID from chat_id (e.g., "conv_0" -> 0)
+            const numericId = parseInt(chatId.replace('conv_', ''));
+
+            // Find conversation in simulate_data by id
+            // Try to match by numeric ID (convert conversation_id to number if it's a string)
+            // Also try to match by string ID directly (in case conversation_id is "conv_0" format)
+            const conversation = simulateData.find(conv => {
+                // Try numeric comparison first
+                const convIdNum = parseInt(conv.conversation_id);
+                if (!isNaN(convIdNum) && convIdNum === numericId) {
+                    return true;
+                }
+                // Try string comparison (in case conversation_id is "conv_0" format)
+                if (conv.conversation_id === chatId || conv.conversation_id === String(numericId)) {
+                    return true;
+                }
+                return false;
+            });
+
+            if (!conversation) {
+                console.error('Conversation not found:', chatId, numericId);
+                console.error('Available conversation IDs:', simulateData.map(conv => conv.conversation_id));
+                return;
+            }
+
+            // Find row for additional info
+            const convosRow = convosData.find(row => row.chat_id === chatId);
+
+            const modal = document.getElementById('conversationModal');
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+
+            modalTitle.textContent = `${chatLabel(chatId)}`;
+
+            // Build modal content
+            let modalContent = '';
+
+            if (convosRow) {
+                // Clean status and determine status class
+                const cleanedModalStatus = cleanStatus(convosRow.status) || '';
+                const modalStatus = cleanedModalStatus.toLowerCase();
+                let modalStatusClass = 'failed';
+                if (modalStatus === 'success' || modalStatus === 'done') {
+                    modalStatusClass = 'done';
+                }
+
+                const knowledgeItems = Array.isArray(convosRow.knowledge) ? convosRow.knowledge : [];
+                const knowledgeHtml = knowledgeItems.length
+                    ? knowledgeItems.map((item, i) => `<div style="margin-bottom:8px"><strong>${i + 1}.</strong> ${escapeHtml(item)}</div>`).join('')
+                    : 'N/A';
+
+                const simPromptTemplate = conversation?.simulated_user_prompt?.simulated_user_prompt_template || 'N/A';
+
+                modalContent += `
+                    <details class="info-section" style="margin-bottom:24px">
+                        <summary class="info-label">
+                            Scenario (${escapeHtml(convosRow.scenario_id || '')})
+                        </summary>
+                        <div style="margin-top:12px;display:flex;flex-direction:column;gap:12px">
+                            <div>
+                                <div class="info-label">Goal</div>
+                                <div class="info-value">${escapeHtml(convosRow.goal || 'N/A')}</div>
+                            </div>
+                            <div>
+                                <div class="info-label">User Profile</div>
+                                <div class="info-value">${escapeHtml(convosRow.user_profile || 'N/A')}</div>
+                            </div>
+                            <div>
+                                <div class="info-label">Knowledge</div>
+                                <div class="info-value">${knowledgeHtml}</div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <div class="info-section">
+                        <div class="info-label">Scores</div>
+                        <div class="info-value">
+                            <strong>Goal Completion Score:</strong> ${parseFloat(convosRow.goal_completion_score).toFixed(2)} |
+                            <strong>Final Score:</strong> ${parseFloat(convosRow.final_score).toFixed(2)} |
+                            <strong>Status:</strong> <span class="status-badge ${modalStatusClass}">${cleanedModalStatus}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-label">Goal Completion Reason</div>
+                        <div class="info-value">${convosRow.goal_completion_reason || 'N/A'}</div>
+                    </div>
+
+                    <details class="info-section" style="margin-bottom:24px">
+                        <summary class="info-label">
+                            Simulation Prompt
+                        </summary>
+                        <div style="margin-top:12px">
+                            <pre style="white-space:pre-wrap;word-break:break-word;background:#f5f7fa;padding:12px;border-radius:8px;font-size:13px;line-height:1.5;max-height:400px;overflow-y:auto">${escapeHtml(simPromptTemplate)}</pre>
+                        </div>
+                    </details>
+                `;
+            }
+
+            // Add conversation messages
+            modalContent += `
+                <div class="conversation-section">
+                    <div class="conversation-title">Conversation Transcript</div>
+            `;
+
+            // Track agent message index (turn_id) for this conversation
+            let agentTurnIndex = 0;
+
+            conversation.conversation_history.forEach((message, index) => {
+                const isUser = message.role === 'simulated_user' || message.role === 'user';
+                const avatar = isUser ? '👤' : '🤖';
+                const label = isUser ? 'User' : 'Agent';
+
+                // Parse markdown content
+                let parsedContent = message.content;
+                if (typeof marked !== 'undefined') {
+                    try {
+                        parsedContent = marked.parse(message.content);
+                    } catch (e) {
+                        console.error('Error parsing markdown:', e);
+                        parsedContent = message.content;
+                    }
+                }
+
+                // For agent messages, add expandable UI
+                let expandBtnHtml = '';
+                let extraInfoHtml = '';
+                const currentTurnId = agentTurnIndex;
+
+                if (!isUser) {
+                    const perTurnRow = perTurnData.find(row =>
+                        row.chat_id === chatId &&
+                        parseInt(row.turn_id) === currentTurnId
+                    );
+
+                    // Check if agent_behavior_failure_reason has a value
+                    const hasFailureReason = perTurnRow &&
+                        perTurnRow.agent_behavior_failure_reason &&
+                        perTurnRow.agent_behavior_failure_reason.trim() !== '';
+
+                    // Check if agent_behavior_failure_label should be skipped
+                    const shouldSkip = perTurnRow && (
+                        perTurnRow.agent_behavior_failure_label === 'skipped_good_performance' ||
+                        perTurnRow.agent_behavior_failure_label === 'no failure'
+                    );
+
+                    const hasScores = perTurnRow && perTurnRow.scores && perTurnRow.scores.length > 0;
+                    const hasQualScores = perTurnRow && perTurnRow.qual_scores && perTurnRow.qual_scores.length > 0;
+                    const hasExpandable = (hasFailureReason && !shouldSkip) || hasScores || hasQualScores;
+
+                    if (hasExpandable) {
+                        const expandBtnId = `expand-btn-${chatId}-${index}`;
+                        const extraInfoId = `extra-info-${chatId}-${index}`;
+                        const showFailure = hasFailureReason && !shouldSkip;
+                        const btnLabel = showFailure ? 'Issue Details' : 'Metrics';
+
+                        expandBtnHtml = `
+                            <button class="message-expand-btn" onclick="toggleMessageExtraInfo('${extraInfoId}', '${expandBtnId}')">
+                                <span class="message-expand-icon material-icons" id="${expandBtnId}">expand_more</span>
+                                <span>${btnLabel}</span>
+                            </button>
+                        `;
+
+                        // Build quantitative score chips
+                        let metricsHtml = '';
+                        if (hasScores) {
+                            const chips = perTurnRow.scores.map(s => {
+                                const label = s.name.replace(/_/g, ' ');
+                                const val = typeof s.value === 'number' ? s.value.toFixed(1) : s.value;
+                                const tipRaw = s.reason || '';
+                                const tip = tipRaw.replace(/"/g, '&quot;');
+                                return `<span class="score-chip" title="${tip}"><span>${label}:</span><strong>${val}/5</strong></span>`;
+                            }).join('');
+                            metricsHtml += `<div class="turn-metrics">${chips}</div>`;
+                        }
+
+                        // Build qualitative label badges
+                        if (hasQualScores) {
+                            const POSITIVE_LABELS = ['compliant', 'professional', 'pass', 'good'];
+                            const NEGATIVE_LABELS = ['flagged', 'unprofessional', 'fail', 'error', 'poor'];
+                            const badges = perTurnRow.qual_scores.map(q => {
+                                const sentiment = POSITIVE_LABELS.includes(q.value.toLowerCase()) ? 'positive'
+                                               : NEGATIVE_LABELS.includes(q.value.toLowerCase()) ? 'negative'
+                                               : 'neutral';
+                                const tipRaw = q.reason || '';
+                                const tip = tipRaw.replace(/"/g, '&quot;');
+                                const customColor = (QUAL_LABEL_COLORS[q.name] || {})[q.value];
+                                const styleAttr = customColor ? ` style="background:${customColor};"` : '';
+                                // Show source tag (Trajectory / Tool call) in the badge label
+                                let source = '';
+                                if (tipRaw.startsWith('[Trajectory]')) source = '<span class="failure-source-tag trajectory">Trajectory</span> ';
+                                else if (tipRaw.startsWith('[Tool call]')) source = '<span class="failure-source-tag tool-call">Tool call</span> ';
+                                const label = q.name.replace(/_/g, ' ');
+                                return `<span class="qual-badge ${sentiment}"${styleAttr} title="${tip}">${source}<span>${label}:</span><strong>${q.value}</strong></span>`;
+                            }).join('');
+                            metricsHtml += `<div class="turn-metrics">${badges}</div>`;
+                        }
+
+                        // Add agent_behavior_failure label badge (skip if source-tagged entries already cover it)
+                        const abfLabel = perTurnRow && perTurnRow.agent_behavior_failure_label;
+                        const skipAbfLabels = new Set(['skipped_good_performance', '']);
+                        const hasSourceTaggedAbf = hasQualScores && perTurnRow.qual_scores.some(q =>
+                            q.name === 'agent_behavior_failure' &&
+                            (q.reason?.startsWith('[Trajectory]') || q.reason?.startsWith('[Tool call]'))
+                        );
+                        if (abfLabel && !skipAbfLabels.has(abfLabel) && !hasSourceTaggedAbf) {
+                            const abfSentiment = abfLabel === 'no failure' ? 'positive' : 'negative';
+                            const abfTip = (perTurnRow.agent_behavior_failure_reason || '').replace(/"/g, '&quot;');
+                            const abfCustomColor = (QUAL_LABEL_COLORS['agent_behavior_failure'] || {})[abfLabel];
+                            const abfStyleAttr = abfCustomColor ? ` style="background:${abfCustomColor};"` : '';
+                            const abfBadge = `<span class="qual-badge ${abfSentiment}"${abfStyleAttr} title="${abfTip}"><span>agent behavior failure:</span><strong>${abfLabel}</strong></span>`;
+                            metricsHtml += `<div class="turn-metrics">${abfBadge}</div>`;
+                        }
+
+                        // Build failure reason block
+                        let failureHtml = '';
+                        if (showFailure) {
+                            let escaped = perTurnRow.agent_behavior_failure_reason
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;')
+                                .replace(/"/g, '&quot;')
+                                .replace(/'/g, '&#39;')
+                                .replace(/\n/g, '<br>');
+                            // Style [Trajectory] and [Tool call] source prefixes
+                            escaped = escaped
+                                .replace(/\[Trajectory\]/g, '<span class="failure-source-tag trajectory">Trajectory</span>')
+                                .replace(/\[Tool call\]/g, '<span class="failure-source-tag tool-call">Tool call</span>');
+                            const topMargin = metricsHtml ? 'margin-top: 12px;' : '';
+                            failureHtml = `
+                                <div style="margin-bottom: 12px; ${topMargin}">
+                                    <strong style="color: #991b1b;">Agent Behavior Failure Reason:</strong>
+                                </div>
+                                <div>${escaped}</div>`;
+                        }
+
+                        const extraInfoClass = showFailure ? 'message-extra-info' : 'message-extra-info metrics-only';
+                        extraInfoHtml = `
+                            <div class="${extraInfoClass}" id="${extraInfoId}">
+                                <div class="message-extra-info-content">
+                                    ${metricsHtml}${failureHtml}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // Increment agent turn index for next agent message
+                    agentTurnIndex++;
+                }
+
+                const turnAttr = !isUser ? ` data-turn-id="${currentTurnId}"` : '';
+                const highlightClass = (!isUser && highlightTurnId !== undefined && currentTurnId === highlightTurnId)
+                    ? ' highlight-turn' : '';
+
+                modalContent += `
+                    <div class="message-wrapper ${message.role === 'simulated_user' ? 'user' : message.role}${highlightClass}"${turnAttr}>
+                        <div class="message-container">
+                            <div class="message-avatar">${avatar}</div>
+                            <div class="message-bubble">
+                                <div class="message-label">${label}</div>
+                                <div class="message-content">${parsedContent}</div>
+                                ${expandBtnHtml}
+                                ${extraInfoHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            modalContent += `</div>`;
+
+            modalBody.innerHTML = modalContent;
+            modal.classList.add('show');
+
+            // Scroll to highlighted turn, or reset to top
+            const modalContentElement = modal.querySelector('.modal-content');
+            if (modalContentElement) {
+                if (highlightTurnId !== undefined) {
+                    const target = modalBody.querySelector(`.message-wrapper[data-turn-id="${highlightTurnId}"]`);
+                    if (target) {
+                        // Let the modal render, then scroll
+                        requestAnimationFrame(() => {
+                            target.scrollIntoView({ block: 'center' });
+                        });
+                    } else {
+                        modalContentElement.scrollTop = 0;
+                    }
+                } else {
+                    modalContentElement.scrollTop = 0;
+                }
+            }
+        }
+
+        // Toggle message extra info
+        function toggleMessageExtraInfo(extraInfoId, expandBtnId) {
+            const extraInfo = document.getElementById(extraInfoId);
+            const expandIcon = document.getElementById(expandBtnId);
+
+            if (extraInfo && expandIcon) {
+                extraInfo.classList.toggle('expanded');
+                expandIcon.classList.toggle('expanded');
+            }
+        }
+
+        // Toggle snippet expand/collapse
+        function toggleSnippet(containerId, iconId) {
+            const container = document.getElementById(containerId);
+            const icon = document.getElementById(iconId);
+
+            if (container && icon) {
+                container.classList.toggle('expanded');
+                icon.classList.toggle('expanded');
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('conversationModal');
+            modal.classList.remove('show');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('conversationModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Initialize report data
+        function initializeReport() {
+            const data = EMBEDDED_FINAL_REPORT;
+
+            // Update title
+            document.getElementById('reportTitle').textContent = 'Simulator Report';
+
+            // Update metrics
+            document.getElementById('totalConversations').textContent = data.total_conversations;
+            document.getElementById('avgTurns').textContent = data.average_turns_per_conversation.toFixed(1);
+
+            // Update performance metrics
+            const performanceGrid = document.getElementById('performanceGrid');
+            const metrics = data.performance_metrics;
+
+            // Metric definitions (built-in + custom merged)
+            const metricDefinitions = {
+                'helpfulness': 'How effectively the response addresses the user\'s needs (1=Poor, 5=Excellent)',
+                'coherence': 'Logical flow and consistency of the response (1=Poor, 5=Excellent)',
+                'verbosity': 'How concise the response is (1=verbose, 5=concise). Higher is better.',
+                'relevance': 'How well the response addresses the user\'s query (1=Poor, 5=Excellent)',
+                'faithfulness': 'How accurately the response reflects the provided knowledge base (1=Poor, 5=Excellent)'
+            };
+            Object.assign(metricDefinitions, CUSTOM_METRIC_DESCRIPTIONS);
+
+            if (metrics && typeof metrics === 'object') {
+                // Render a single metric card (1-5 scale with label + bar)
+                function renderMetricCard(name, value, isCustom) {
+                    if (isCustom) {
+                        if (typeof value !== 'object' || value === null || value.value === -1) return;
+                    } else {
+                        if (typeof value !== 'number' || value === -1) return;
+                    }
+                    const definition = metricDefinitions[name.toLowerCase()]
+                        || metricDefinitions[name.toLowerCase().replace(/ /g, '_')] || '';
+
+                    const item = document.createElement('div');
+                    item.className = `performance-item ${name}`;
+
+                    if (isCustom) {
+                        const rawValue = value.value;
+                        const minVal = value.min;
+                        const maxVal = value.max;
+                        const range = maxVal - minVal;
+                        const percentage = range > 0
+                            ? Math.max(0, Math.min(100, ((rawValue - minVal) / range) * 100))
+                            : 0;
+                        const normalizedValue = range > 0 ? 1 + ((rawValue - minVal) / range) * 4 : 1;
+                        const label = scoreLabel(normalizedValue);
+                        const labelClass = scoreLabelClass(normalizedValue);
+                        item.innerHTML = `
+                            <div class="performance-label">
+                                ${name}
+                                ${definition ? `
+                                    <span class="info-icon-wrapper">
+                                        <span class="info-icon material-icons">info</span>
+                                        <span class="tooltip">${definition}</span>
+                                    </span>
+                                ` : ''}
+                            </div>
+                            <div class="performance-value">
+                                ${rawValue.toFixed(1)}
+                                <span class="score-label-badge ${labelClass}">${label}</span>
+                            </div>
+                            <div class="performance-bar-container">
+                                <div class="performance-bar score-${labelClass}" style="width: ${percentage}%"></div>
+                            </div>
+                        `;
+                    } else {
+                        const percentage = Math.max(0, Math.min(100, ((value - 1) / 4) * 100));
+                        const label = scoreLabel(value);
+                        const labelClass = scoreLabelClass(value);
+                        item.innerHTML = `
+                            <div class="performance-label">
+                                ${name}
+                                ${definition ? `
+                                    <span class="info-icon-wrapper">
+                                        <span class="info-icon material-icons">info</span>
+                                        <span class="tooltip">${definition}</span>
+                                    </span>
+                                ` : ''}
+                            </div>
+                            <div class="performance-value">
+                                ${value.toFixed(1)}
+                                <span class="score-label-badge ${labelClass}">${label}</span>
+                            </div>
+                            <div class="performance-bar-container">
+                                <div class="performance-bar score-${labelClass}" style="width: ${percentage}%"></div>
+                            </div>
+                        `;
+                    }
+                    performanceGrid.appendChild(item);
+                }
+
+                // Render built-in metrics
+                Object.keys(metrics).forEach(key => {
+                    if (key === 'custom_metric_scores') return; // handled separately below
+                    renderMetricCard(key, metrics[key], false);
+                });
+
+                // Render custom metrics (no label/bar — scale may differ from 1-5)
+                if (metrics.custom_metric_scores && typeof metrics.custom_metric_scores === 'object') {
+                    Object.keys(metrics.custom_metric_scores).forEach(key => {
+                        renderMetricCard(key, metrics.custom_metric_scores[key], true);
+                    });
+                }
+            }
+        }
+
+        // Render Qualitative Metrics Distribution
+        function renderQualMetrics() {
+            const data = EMBEDDED_FINAL_REPORT;
+            const distributions = data.qual_metric_distributions;
+            const section = document.getElementById('qualMetricsSection');
+            const container = document.getElementById('qualMetricsContent');
+
+            if (!distributions || Object.keys(distributions).length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            const QUAL_PALETTE = [
+                '#3b82f6',  // blue
+                '#f59e0b',  // amber
+                '#22c55e',  // green
+                '#ef4444',  // red
+                '#a855f7',  // purple
+                '#14b8a6',  // teal
+            ];
+
+            section.style.display = 'block';
+            container.innerHTML = '';
+
+            Object.entries(distributions).forEach(([metricName, labels]) => {
+                const group = document.createElement('div');
+                group.className = 'qual-metric-group';
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'qual-metric-name';
+                const formattedQualName = metricName.replace(/_/g, ' ');
+                const qualDesc = CUSTOM_METRIC_DESCRIPTIONS[metricName] || '';
+                nameEl.innerHTML = `${escapeHtml(formattedQualName)}${qualDesc ? `
+                    <span class="info-icon-wrapper">
+                        <span class="info-icon material-icons">info</span>
+                        <span class="tooltip">${escapeHtml(qualDesc)}</span>
+                    </span>` : ''}`;
+                group.appendChild(nameEl);
+
+                const entries = Object.entries(labels); // already sorted desc by count
+
+                entries.forEach(([label, item], idx) => {
+                    const metricColors = QUAL_LABEL_COLORS[metricName] || {};
+                    const color = metricColors[label] || QUAL_PALETTE[idx % QUAL_PALETTE.length];
+                    const barWidth = item.percentage;
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'qual-bar-wrapper';
+
+                    const row = document.createElement('div');
+                    row.className = 'failure-bar-row';
+                    row.innerHTML = `
+                        <div class="failure-bar-label">${escapeHtml(label)}</div>
+                        <div class="failure-bar-track">
+                            <div class="failure-bar-fill" style="width: ${barWidth}%; background: ${color};">
+                                ${item.occurrences}
+                            </div>
+                        </div>
+                        <div class="failure-bar-stat">${item.percentage}%</div>
+                        <span class="qual-expand-icon material-icons">expand_more</span>
+                    `;
+
+                    const details = document.createElement('div');
+                    details.className = 'qual-turn-details';
+
+                    // Find matching turns from perTurnData
+                    const isAbf = metricName === 'agent_behavior_failure';
+                    const matchingTurns = perTurnData.filter(t => {
+                        if (isAbf) return t.agent_behavior_failure_label === label;
+                        return (t.qual_scores || []).some(
+                            q => q.name === metricName && q.value === label
+                        );
+                    });
+
+                    if (matchingTurns.length === 0) {
+                        details.innerHTML = '<div class="qual-turn-empty">No matching turns found</div>';
+                    } else {
+                        // Group turns by conversation
+                        const grouped = {};
+                        matchingTurns.forEach(t => {
+                            if (!grouped[t.chat_id]) grouped[t.chat_id] = [];
+                            grouped[t.chat_id].push(t.turn_id);
+                        });
+                        details.innerHTML = Object.entries(grouped).map(([chatId, turnIds]) =>
+                            `<div class="qual-turn-group">` +
+                            `<div class="qual-turn-conv-label">${escapeHtml(chatLabel(chatId))}</div>` +
+                            `<div class="qual-turn-chips">` +
+                            turnIds.map(tid =>
+                                `<button class="qual-turn-chip" data-chat-id="${escapeHtml(chatId)}" data-turn-id="${tid}" onclick="openModal(this.getAttribute('data-chat-id'), parseInt(this.getAttribute('data-turn-id')))">Turn ${tid}</button>`
+                            ).join('') +
+                            `</div></div>`
+                        ).join('');
+                    }
+
+                    row.addEventListener('click', () => {
+                        const isOpen = details.classList.toggle('open');
+                        wrapper.classList.toggle('expanded', isOpen);
+                    });
+
+                    wrapper.appendChild(row);
+                    wrapper.appendChild(details);
+                    group.appendChild(wrapper);
+                });
+
+                container.appendChild(group);
+            });
+        }
+
+        // Global JS tooltip for table headers (CSS-only tooltips get clipped
+        // by border-collapse: collapse on table cells)
+        (function() {
+            const tip = document.getElementById('globalTooltip');
+            const MARGIN = 8;
+
+            function showTip(wrapper, e) {
+                const inner = wrapper.querySelector('.tooltip');
+                if (!inner) return;
+                tip.innerHTML = inner.innerHTML;
+                tip.classList.add('visible');
+                positionTip(e);
+            }
+
+            function positionTip(e) {
+                const tw = tip.offsetWidth;
+                const th = tip.offsetHeight;
+                let x = e.clientX - tw / 2;
+                let y = e.clientY - th - MARGIN;
+                // Flip below cursor if not enough space above
+                if (y < MARGIN) y = e.clientY + MARGIN;
+                // Keep within viewport horizontally
+                x = Math.max(MARGIN, Math.min(x, window.innerWidth - tw - MARGIN));
+                tip.style.left = x + 'px';
+                tip.style.top = y + 'px';
+            }
+
+            function hideTip() {
+                tip.classList.remove('visible');
+            }
+
+            document.addEventListener('mouseover', function(e) {
+                const wrapper = e.target.closest('thead .info-icon-wrapper');
+                if (wrapper) showTip(wrapper, e);
+            });
+            document.addEventListener('mousemove', function(e) {
+                if (tip.classList.contains('visible')) positionTip(e);
+            });
+            document.addEventListener('mouseout', function(e) {
+                if (e.target.closest('thead .info-icon-wrapper') &&
+                    !e.relatedTarget?.closest('thead .info-icon-wrapper')) {
+                    hideTip();
+                }
+            });
+        })();
+
+        // Render evaluation pipeline note (model/provider) in header
+        function renderEvaluationPipeline() {
+            const data = EMBEDDED_FINAL_REPORT;
+            const el = document.getElementById('evaluationPipeline');
+            if (data.evaluation_model || data.evaluation_provider) {
+                const parts = [];
+                if (data.evaluation_provider) parts.push(data.evaluation_provider);
+                if (data.evaluation_model) parts.push(data.evaluation_model);
+                el.textContent = 'Evaluation model: ' + parts.join(' / ');
+                el.style.display = 'block';
+            }
+        }
+
+        // Toggle prompts appendix collapse
+        function togglePromptsAppendix() {
+            const content = document.getElementById('promptsAppendixContent');
+            const arrow = document.getElementById('promptsAppendixArrow');
+            content.classList.toggle('collapsed');
+            arrow.classList.toggle('collapsed');
+        }
+
+        // Render evaluation prompts appendix
+        function renderPromptsAppendix() {
+            const data = EMBEDDED_FINAL_REPORT;
+            const prompts = data.evaluation_prompts;
+            const section = document.getElementById('promptsAppendixSection');
+            const body = document.getElementById('promptsAppendixBody');
+
+            if (!prompts || prompts.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            body.innerHTML = '';
+
+            prompts.forEach(cat => {
+                const catDiv = document.createElement('div');
+                catDiv.style.marginBottom = '24px';
+
+                let html = '<h4 style="margin-bottom:4px;">' + escapeHtml(cat.category) + '</h4>';
+                html += '<p style="color:#64748b; font-size:13px; margin-bottom:8px;">' + escapeHtml(cat.description) + '</p>';
+
+                cat.prompts.forEach(p => {
+                    html += '<details style="margin-bottom:8px;">';
+                    html += '<summary style="cursor:pointer; font-weight:500; font-size:14px;">' + escapeHtml(p.name) + '</summary>';
+                    html += '<pre style="background:#f8fafc; border:1px solid #e8ecef; border-radius:6px; padding:12px; margin-top:6px; white-space:pre-wrap; font-size:12px; max-height:300px; overflow-y:auto;">' + escapeHtml(p.text) + '</pre>';
+                    html += '</details>';
+                });
+
+                catDiv.innerHTML = html;
+                body.appendChild(catDiv);
+            });
+        }
+
+        // Initialize everything when page loads
+        window.onload = function() {
+            console.log('Simulate data loaded:', simulateData.length, 'conversations');
+            initializeReport();
+            renderQualMetrics();
+            renderEvaluationPipeline();
+            populateTable();
+            renderUniqueErrors();
+            renderPromptsAppendix();
+        };
+    </script>
+</body>
+</html>
