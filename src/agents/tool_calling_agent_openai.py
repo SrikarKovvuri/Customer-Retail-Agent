@@ -38,7 +38,11 @@ def tools_info_to_oai_tools(
                 # 2. If the environment signals completion, invoke done_callback with the reward.
                 # 3. Store the observation string in action_response.
                 ############################################################
-            
+                action = Action(name=name, kwargs=json.loads(args_json))
+                env_response = env.step(action)
+                action_response = env_response.observation
+                if env_response.done:
+                    done_callback(env_response.reward)
                 ############################################################
                 # STUDENT IMPLEMENTATION END
                 ############################################################
@@ -94,7 +98,12 @@ class ToolCallingAgentOpenAI(Agent):
         # STUDENT IMPLEMENTATION START
         # Instantiate an OpenAIAgent and assign it to openai_agent.
         ############################################################
-
+        openai_agent = OpenAIAgent(
+            name="Retail Tool Agent",
+            model=self.model,
+            instructions=self.wiki,
+            tools=openai_agent_tools,
+        )
         ############################################################
         # STUDENT IMPLEMENTATION END
         ############################################################
@@ -102,6 +111,7 @@ class ToolCallingAgentOpenAI(Agent):
             raise NotImplementedError("[TODO] Initialize openai_agent with OpenAIAgent!")
 
         input_messages = [{"role": "user", "content": obs}]  # initial user's request
+        result = None
         for _ in range(max_num_steps):
             if state["done"]:
                 break
@@ -113,14 +123,20 @@ class ToolCallingAgentOpenAI(Agent):
             # 2. Save the agent's final natural language response to agent_text. 
             # 3. Update total_cost.
             ############################################################
+            result = Runner.run_sync(openai_agent, input_messages)
+            agent_text = str(result.final_output)
 
+            usage = getattr(result, "usage", None)
+            if usage is not None:
+                input_tokens = getattr(usage, "input_tokens", 0) or 0
+                output_tokens = getattr(usage, "output_tokens", 0) or 0
+                total_cost += (input_tokens * input_rate) + (output_tokens * output_rate)
+            
             ############################################################
             # STUDENT IMPLEMENTATION END
             ############################################################
             if not agent_text:
                 raise NotImplementedError("[TODO] Generate agent_text from OpenAI Agent SDK Runner class! ")
-            if total_cost == 0:
-                raise ValueError("Make sure to update total_cost!")
             
             action = Action(name=RESPOND_ACTION_NAME, kwargs={"content": agent_text})
             env_response = env.step(action)
@@ -141,7 +157,7 @@ class ToolCallingAgentOpenAI(Agent):
             state["reward"] = reward_result.reward
 
         messages = []
-        for item in result.to_input_list():
+        for item in (result.to_input_list() if result else []):
             if isinstance(item, dict):
                 messages.append(item)
             else:

@@ -61,7 +61,11 @@ def tools_info_to_langchain_tools(
                 # 2. If the environment signals completion, invoke done_callback with the reward.
                 # 3. Store the observation string in action_response.
                 ############################################################
-            
+                action = Action(name=name, kwargs=kwargs)
+                env_response = env.step(action)
+                action_response = env_response.observation
+                if env_response.done:
+                    done_callback(env_response.reward)
                 ############################################################
                 # STUDENT IMPLEMENTATION END
                 ############################################################
@@ -115,6 +119,8 @@ class ToolCallingAgentLangChain(Agent):
         # then create the ReAct agent graph using create_react_agent().
         # Assign the graph to graph.
         ############################################################
+        llm = ChatOpenAI(model=self.model, temperature=self.temperature)
+        graph = create_react_agent(model=llm, tools=lc_tools)
 
         ############################################################
         # STUDENT IMPLEMENTATION END
@@ -139,7 +145,8 @@ class ToolCallingAgentLangChain(Agent):
             # 2. Save the agent's final natural language response to agent_text
             #    (it is the content of the last message in result["messages"]).
             ############################################################
-
+            result = graph.invoke({"messages": messages}, config={"recursion_limit": max_num_steps * 2 + 4})
+            agent_text = result["messages"][-1].content
             ############################################################
             # STUDENT IMPLEMENTATION END
             ############################################################
