@@ -66,6 +66,7 @@ def tools_info_to_langchain_tools(
                 action_response = env_response.observation
                 if env_response.done:
                     done_callback(env_response.reward)
+
                 ############################################################
                 # STUDENT IMPLEMENTATION END
                 ############################################################
@@ -121,7 +122,6 @@ class ToolCallingAgentLangChain(Agent):
         ############################################################
         llm = ChatOpenAI(model=self.model, temperature=self.temperature)
         graph = create_react_agent(model=llm, tools=lc_tools)
-
         ############################################################
         # STUDENT IMPLEMENTATION END
         ############################################################
@@ -147,6 +147,7 @@ class ToolCallingAgentLangChain(Agent):
             ############################################################
             result = graph.invoke({"messages": messages}, config={"recursion_limit": max_num_steps * 2 + 4})
             agent_text = result["messages"][-1].content
+
             ############################################################
             # STUDENT IMPLEMENTATION END
             ############################################################

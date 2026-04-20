@@ -69,7 +69,6 @@ class ModifyPendingOrderItems(Tool):
         # Calculate the total price difference (new prices minus old prices)
         # across all item pairs and accumulate into diff_price.
         ############################################################
-
         used_line_indices: set[int] = set()
         for item_id, new_item_id in zip(item_ids, new_item_ids):
             for idx, row in enumerate(order["items"]):
@@ -84,7 +83,6 @@ class ModifyPendingOrderItems(Tool):
                 continue
             new_price = products[product_id]["variants"][new_item_id]["price"]
             diff_price = round(diff_price + (new_price - old_price), 2)
-
         ############################################################
         # STUDENT IMPLEMENTATION END
         ############################################################
@@ -105,7 +103,6 @@ class ModifyPendingOrderItems(Tool):
         #    options in order["items"] to the new variant's values.
         # 3. Set order["status"] to "pending (item modified)".
         ############################################################
-
         if diff_price != 0:
             new_payment_record = PaymentRecord(
                 transaction_type=(
@@ -118,9 +115,11 @@ class ModifyPendingOrderItems(Tool):
             )
             order["payment_history"].append(new_payment_record.to_dict())
 
+
         if "gift_card" in payment_method_id:
             pm = users[order["user_id"]]["payment_methods"][payment_method_id]
             pm["balance"] = round(pm["balance"] - diff_price, 2)
+
 
         used_line_indices = set()
         for item_id, new_item_id in zip(item_ids, new_item_ids):
@@ -134,9 +133,8 @@ class ModifyPendingOrderItems(Tool):
                     row["item_id"] = new_item_id
                     row["price"] = variant["price"]
                     row["options"] = variant["options"]
-                    if "name" in products[product_id]:
-                        row["name"] = products[product_id]["name"]
                     break
+
 
         order["status"] = "pending (item modified)"
 

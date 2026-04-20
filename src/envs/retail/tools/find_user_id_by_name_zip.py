@@ -36,7 +36,6 @@ class FindUserIdByNameZip(Tool):
             ):
                 user_id = temp_user_id
                 break
-
         ############################################################
         # STUDENT IMPLEMENTATION END
         ############################################################

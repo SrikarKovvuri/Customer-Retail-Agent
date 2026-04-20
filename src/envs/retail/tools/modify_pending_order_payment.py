@@ -69,7 +69,6 @@ class ModifyPendingOrderPayment(Tool):
         #   - If the old payment method is a gift card, add the amount back to
         #     its balance and round to 2 decimal places.
         ############################################################
-
         new_payment_record = PaymentRecord(
             transaction_type=TransactionType.PAYMENT,
             amount=amount,
@@ -82,6 +81,7 @@ class ModifyPendingOrderPayment(Tool):
             payment_method_id = old_payment_method_id,
         )
         new_records.append(old_payment_record)
+
 
         if "gift_card" in new_payment_record.payment_method_id:
             val = data["users"][order["user_id"]]["payment_methods"][new_payment_record.payment_method_id]["balance"]
